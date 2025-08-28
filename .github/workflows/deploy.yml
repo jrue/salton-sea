@@ -26,7 +26,7 @@ jobs:
 
       - name: Build site
         env:
-          BASE_URL: /YOUR-REPO-NAME/   # <-- set to /<repo>/
+          BASE_URL: /salton-sea/   # <-- set to /<repo>/
         run: npm run build
 
       - name: Deploy to gh-pages
