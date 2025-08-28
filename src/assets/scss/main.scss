@@ -1,0 +1,225 @@
+@import "fonts";
+
+/* Overrides */
+
+$body-bg: #6887A6;
+$body-color: #F8F9FB;
+
+$enable-dark-mode: false;
+
+$blue: #355679;
+$green: #0F989B;
+$yellow: #FFB35B;
+$red: #DA5448;
+
+$table-bg: transparent;
+$table-color: white;
+$pagination-bg: transparent;
+$pagination-color: white;
+$pagination-disabled-bg: transparent;
+
+$display-line-height: 1;
+
+/* navbar styles */
+$spacer: 1rem; /* Spacer to calculate other items */
+$navbar-padding-y: $spacer * .125; /* default is .5, for thinner nav bars */
+$nav-link-font-size: .85rem;
+
+$font-size-base: 1rem;
+
+$font-family-base: 'Inter', 'Roboto', sans-serif;
+$headings-font-family: 'Cal Sans', serif;
+$headings-font-weight: 100;
+$font-family-sans-serif: 'Helvetica Neue', Arial, sans-serif;
+$bootstrap-icons-font-dir: "../fonts";
+
+@import "bootstrap-icons/font/bootstrap-icons";
+@import "bootstrap/scss/bootstrap";
+
+.light-blue-bg{
+  background-color: var(--light-background, #CFDFEB);
+}
+
+.hero-text{
+  color: var(--hero-text, #516A88);
+}
+
+.inter-font{
+  font-family: 'Inter', san-serif !important;
+}
+
+section[role="main"]{
+  background-image: url('../../assets/images/hero.png'), url('../../assets/images/blue-relief.png');
+  background-size: contain, cover;
+  background-position: center, center;
+  background-repeat: no-repeat;
+  position: relative;
+  @media (max-width: 900px) {
+    background-size: contain, cover;
+    background-position: left center, center;
+  }
+}
+
+
+/* hide first column on mobile */
+@media (max-width: 550px) {
+  table.dataTable td:nth-child(1),
+  table.dataTable th:nth-child(1) {
+    display: none;
+  }
+}
+
+// section[role="main"]:first-child::before{
+//   content:"";
+//   position: absolute;
+//   width: 100%;
+//   height: 100%;
+//   z-index: 0;
+//   inset: 0;
+//   background-color: rgba(0,0,0,0.5);
+// }
+// section[role="main"] > * {
+//   position: relative;
+//   z-index: 1; 
+// }
+
+
+
+
+/* My styles */
+.font-small{
+  font-size: 0.7rem;
+}
+
+.font-smaller{
+  font-size: 0.80rem;
+}
+
+#policy-table_wrapper {
+  .dt-pager {
+    .pagination {
+      justify-content: flex-start;
+
+      @media (max-width: 1200px) {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+.pill-labels{
+  height:0;
+  padding-bottom:45%;
+  overflow: hidden;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.pills{
+  position: relative;
+  z-index: 0;
+}
+
+.btn.pills{
+  border: none;
+}
+
+.pills::before {
+  content: "";
+  position: absolute;
+  border-radius: var(--bs-border-radius-lg) !important;
+  top: 0;
+  left: 0;
+  width: 0;               /* start with no width */
+  height: 100%;
+  background: var(--priority-default-color, #526977);    /* wipe color */
+  z-index: -1;            /* keep it behind the text */
+  transition: width 0.4s ease; /* animation */
+}
+
+.alignment-buttons.infrastructure.pills::before{
+  background: var(--alignment-infrastructure-bg-color, #526977); 
+}
+.alignment-buttons.agriculture.pills::before{
+  background: var(--alignment-agriculture-bg-color, #526977); 
+} 
+.alignment-buttons.green-spaces.pills::before{
+  background: var(--alignment-green-spaces-bg-color, #526977); 
+} 
+.alignment-buttons.air-quality.pills::before{
+  background: var(--alignment-air-quality-bg-color, #526977); 
+} 
+
+.pills:hover::before {
+  width: 100%;            /* expand to full width */
+}
+
+.pills:hover{
+  color: var(--pill-active-text-color, black) !important;
+}
+
+.pills.expanded::before{
+  width: 100%;
+}
+
+.btn.pills.active{
+  color: var(--pill-active-text-color, white) !important;
+}
+
+.pills.active::before{
+  width: 100% !important;
+  background-color: var(--priority-active-color, #526977) !important; 
+}
+
+#alignment-value-ratio.active{
+  fill-opacity: 1;
+}
+
+
+/* Base state: stroke hidden (dashoffset equals full length = 100) */
+.map-background-element {
+  fill-opacity: 0;
+  fill: #142a3f;
+  stroke: #999999;
+  stroke-width: 1px;
+  stroke-opacity: 1;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 500ms ease-in-out, fill-opacity 500ms 100ms ease-in-out;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-background-element.is-drawn {
+  stroke-dashoffset: 0;
+  fill-opacity: 0.5;
+}
+
+#alignment-value-ratio{
+  transform: scale(0);
+  fill: #ddd;
+  fill-opacity: 0;
+  font-family: Inter, sans-serif;
+  font-weight: 900; 
+  font-size: 250px;
+  line-height: 100px;
+  transform-origin: 225px 825px;
+  transition: transform 200ms ease-in-out, opacity 400ms ease-in-out;
+}
+
+#alignment-value-ratio.active{
+  transform: scale(1);
+  fill-opacity: 1;
+}
+
+/* Optional: add a subtle glow while drawing */
+// .map-background-element.is-drawn {
+//   // filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+// }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .map-background-element {
+    transition: none;
+  }
+}

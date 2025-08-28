@@ -1,0 +1,490 @@
+<script>
+(() => {
+  "use strict";
+
+  const App = {
+    state: {
+      allData: [],              //csv imported using d3
+      priorityIndex: null,      //d3.rollup of specific columns used as aggregate function
+      uniquePriorities: [],     //to create top-level pill buttons, these are unique top-level priorities in dataset
+      priorityShortcodes: [],   //since dataset has longer phrases for top-level buttons, this uses shorter names
+      priorityDescriptions: [], //longer description to display after user clicks top-level button
+      currentAlignment: "",     //current top-level alignment
+      currentPriority: "",      //keep track of which priority we're viewing to filter datatable when user clicks a city
+      dt: null,                  //datatable reference
+      wait: false               // wait for scroll animation to complete
+    },
+    els: {
+      pillLabels:    "#pill-labels",
+      categoryInfo:  "#category-info",
+      mapRoot:       "#salton_sea_map",
+      ratioHud:      "#alignment-value-ratio",
+      dataTable:     "#policy-table",
+      dataHeader:    "#data-table-header"
+    },
+    colors: {
+      airQuality: "#5192E2",
+      greenSpaces: "#469065",
+      agriculture: "#F88C8C",
+      infrastructure: "#FFD89D",
+      priorityDefault: "#526977",  //--priority-default-color
+      mapCircleColor: "#142a3f",
+      mapSelectedColor: "#142a3f",
+      pillActiveTextColor: "#000000",
+      heroText: "#516A88",
+      lightBackground: "#CFDFEB"
+    }
+  };
+
+  //set the CSS variable to the default color
+  $(":root").css("--priority-default-color", App.colors.priorityDefault);
+  $(":root").css("--pill-active-text-color", App.colors.pillActiveTextColor);
+  $(":root").css("--hero-text", App.colors.heroText);
+  $(":root").css("--light-background", App.colors.lightBackground);
+  $(":root").css("--alignment-infrastructure-bg-color", App.colors.infrastructure);
+  $(":root").css("--alignment-agriculture-bg-color", App.colors.agriculture);
+  $(":root").css("--alignment-green-spaces-bg-color", App.colors.greenSpaces);
+  $(":root").css("--alignment-air-quality-bg-color", App.colors.airQuality);
+
+  // -----------------------------
+  // Utilities
+  // -----------------------------
+  const slugify = (s) => String(s).trim().toLowerCase().split(/\s+/).join("-"); //use jurisdictions as class names sometimes,
+  const camelfy = s => String(s).trim().toLowerCase().split(/\s+/).map((w, i) => i === 0 ? w : w[0].toUpperCase() + w.slice(1)).join("");
+  const classListFromStrings = (arr) => arr.map(j => slugify(j)).join(" ");
+
+  const hexToRgb = hex => {
+    let h = String(hex).replace('#', '').trim();
+    if (h.length === 3) h = h.split('').map(ch => ch + ch).join('');
+    const num = parseInt(h, 16);
+    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+  };
+
+  // Returns '#000000' or '#ffffff' for best contrast with a hex background.
+  // Accepts 3- or 6-digit hex, with or without '#'.
+  // example pickHighContrastTextColor('#ffffff'); returns "#000000"
+  const pickHighContrastTextColor = (hex, light = '#ffffff', dark = '#000000') => {
+    const { r, g, b } = hexToRgb(hex);
+    const toLin = c => {
+      c /= 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    const L = 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
+    const contrastWhite = 1.05 / (L + 0.05);
+    const contrastBlack = (L + 0.05) / 0.05;
+    return contrastWhite > contrastBlack ? light : dark;
+  };
+
+
+
+  const firstOfSet = (setLike) =>
+    setLike && typeof setLike.values === "function"
+      ? setLike.values().next().value
+      : null;
+
+  const toTitleCase = (str) => {
+    const small = /^(a|an|and|as|at|but|by|for|in|nor|of|on|or|per|the|to|vs?|via)$/i;
+    return String(str).split(/\s+/).map((w, i, all) => {
+      if (small.test(w) && i !== 0 && i !== all.length - 1) return w.toLowerCase();
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }).join(" ");
+  };
+
+  // Build the big index once
+  const buildPriorityIndex = (rows) => d3.rollup(
+    rows,
+    groupRows => ({
+      jurisdictions:       new Set(groupRows.map(d => d["Jurisdiction"])),
+      fullAlignment:       new Set(groupRows.map(d => d["Priority Alignment"])),
+      alignmentDescription:new Set(groupRows.map(d => d["Priority Alignment Description"])),
+      sharedPriorities:    new Set(groupRows.map(d => d["Shared Priorities"])),
+      byShared: d3.rollup(
+        groupRows,
+        vv => {
+          const jur   = new Set(vv.map(d => d["Jurisdiction"]).filter(Boolean));
+          const terms = new Set(vv.map(d => d["General Terms of Commonalities (Specific)"]).filter(Boolean));
+          const countsByJur = d3.rollup(
+            vv,
+            vvv => vvv.length, // change to unique policy count if desired
+            d => d["Jurisdiction"]
+          );
+          return { jurisdictions: jur, generalTerms: terms, jurisdictionCount: jur.size, countsByJur };
+        },
+        d => d["Shared Priorities"]
+      )
+    }),
+    d => d["Priority Alignment Shortcode"]
+  );
+
+  // -----------------------------
+  // UI: Top pill buttons
+  // -----------------------------
+  function updatePills(labels, labelDescriptions) {
+    const $root = $(App.els.pillLabels).empty();
+
+    for (let i = 0; i < labels.length; i++) {
+      const label = labels[i];
+      const desc  = labelDescriptions?.[i] || "";
+      const slug  = slugify(label);
+
+      const $col = $('<div class="col-6 col-md-6 col-lg-3 d-grid"></div>');
+      
+      //customize the individual svg icons by editing the .svg files in the images folder. Keep names based on slugs.
+      $col.append(`
+        <div
+          class="pill-labels mb-3 d-block"
+          style="background-image:url('{{ '/assets/images/' | url }}${slug}.svg');">
+        </div>
+      `);
+      $col.append(`
+        <button
+          class="alignment-buttons ${slug} pills btn badge lh-sm rounded-3 font-small text-bg-light fw-normal text-center py-2 d-block text-uppercase"
+          data-description="${desc}"
+          data-eq="eq-${i}">
+          ${label}
+        </button>
+      `);
+
+      $root.append($col);
+    }
+  }
+
+  // -----------------------------
+  // UI: Render detail for a shortcode click
+  // -----------------------------
+  function renderPriorityDetail(shortcode) {
+    const node = App.state.priorityIndex.get(shortcode);
+    if (!node) return;
+
+    const title = firstOfSet(node.fullAlignment) || "";
+    const para  = firstOfSet(node.alignmentDescription) || "";
+
+    const sharedPriorities = Array.from(node.sharedPriorities || []);
+    const $info = $(App.els.categoryInfo).empty();
+
+    $info.append(`<h2>${title}</h2><p>${para}</p>`);
+
+    // For each shared priority, render its button & collapse with jurisdictions
+    for (const sp of sharedPriorities) {
+      const entry = node.byShared.get(sp);
+      if (!entry) continue;
+
+      const jurisdictions = Array.from(entry.jurisdictions).sort();
+      const jurClassList = classListFromStrings(jurisdictions);
+      const generalTerm  = firstOfSet(entry.generalTerms) || "";
+      const spId = slugify(sp);
+
+      // Trigger button
+      $info.append(`
+        <button
+          class="priorities pills btn rounded-3 text-bg-light font-smaller fw-normal text-start mb-2 d-block"
+          data-jurisdictions="${jurClassList}"
+          data-bs-title="${generalTerm}"
+          data-bs-toggle="collapse"
+          data-bs-target="#${spId}">
+          ${sp}
+          <span class="badge rounded-pill text-bg-secondary">${entry.jurisdictionCount}/7</span>
+        </button>
+      `);
+
+      // Collapse panel + jurisdiction buttons
+      const $box = $(`<div id="${spId}" class="terms collapse ms-4"
+                        data-jurisdictions="${jurClassList}"
+                        data-priority="${sp}">
+                        <p class="font-smaller mb-2">
+                          ${generalTerm}. Click on a jurisdiction below to see related policies that align with this category.
+                        </p>
+                      </div>`);
+
+      for (const jur of jurisdictions) {
+        const count = entry.countsByJur.get(jur) || 0;
+        $box.append(`
+          <button
+            class="jurisdiction pills btn lh-sm rounded-3 text-bg-light font-smaller fw-normal text-start py-1 mb-2 d-block"
+            data-jurisdiction="${slugify(jur)}"
+            data-jurisdiction-raw="${jur}">
+            ${jur}
+            <span class="badge rounded-pill text-bg-secondary">${count} ${count == 1 ? 'policy' : 'policies'}</span>
+          </button>
+        `);
+      }
+      $info.append($box);
+    }
+  }
+
+  // -----------------------------
+  // Table: DataTables setup & refresh
+  // -----------------------------
+  function initDataTable() {
+    App.state.dt = $(App.els.dataTable).DataTable({
+      pagingType: "simple_numbers",
+      renderer: "bootstrap",
+      lengthChange: false,
+      paging: true,
+      searching: true,
+      info: true,
+      autoWidth: false,
+      responsive: true,
+      dom: `t
+          <"row mt-3 justify-content-center"
+            <"col-12 col-lg-4 dt-pager"p>
+            <"col-12 col-lg-4 dt-button text-center"B>
+            <"col-6  col-lg-4 dt-search"f>
+          >
+          <"row mt-2"
+            <"col-12 dt-info text-center"i>
+          >
+        `,
+      buttons: [
+        {
+          text: 'Show Policies for All Communities',
+          className: 'btn btn-outline btn-sm bg-transparent text-wrap font-smaller',
+          action: function () {
+            renderPolicyTable(); // show all rows
+          }
+        }
+      ],
+      language: {
+        paginate: {
+          previous: '<i class="bi bi-chevron-left"></i>',
+          next: '<i class="bi bi-chevron-right"></i>'
+        }
+      },
+      columns: [
+        { data: "Jurisdiction", defaultContent: "" },
+        { data: "Policy Identifier", defaultContent: "" },
+        { data: "Policy Description", defaultContent: "", className: "text-wrap" },
+        {
+          data: "Strategy List",
+          defaultContent: "",
+          render: (data) => {
+            if (!data) return "";
+            return String(data)
+              .split(",")
+              .map(item => `<span class="badge text-wrap text-bg-secondary me-1 mb-1 lh-sm text-start">${toTitleCase(item.trim())}</span>`)
+              .join(" ");
+          }
+        }
+      ],
+      columnDefs: [
+        { targets: 0, responsivePriority: 3 },
+        { targets: 1, responsivePriority: 1 },
+        { targets: 2, responsivePriority: 1 },
+        { targets: 3, responsivePriority: 1 }
+      ]
+    });
+  } 
+
+  function renderPolicyTable(jurisdictionRaw = null, sharedPriority = null) {
+    const rows = App.state.allData.filter(d =>
+      (!jurisdictionRaw || d["Jurisdiction"] === jurisdictionRaw) &&
+      (!sharedPriority || d["Shared Priorities"] === sharedPriority)
+    );
+
+    // header text
+    const hdr = jurisdictionRaw && sharedPriority
+      ? `Showing ${App.state.currentAlignment} policies for <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">${jurisdictionRaw}</span> related to <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">${sharedPriority}</span>`
+      : jurisdictionRaw
+        ? `Showing policies for ${jurisdictionRaw}`
+        : sharedPriority
+          ? `Showing policies related to ${sharedPriority}`
+          : `Showing all policies`;
+
+    $(App.els.dataHeader).html(hdr);
+
+    App.state.dt.clear().rows.add(rows).draw();
+  }
+
+  // -----------------------------
+  // Event wiring 
+  // -----------------------------
+  function wireEvents($) {
+    // Top-level category click
+    $(document).on("click", ".alignment-buttons", function () {
+      const shortcode = $(this).text().trim(); // button text is the shortcode, i.e. green spaces
+      App.state.currentAlignment = shortcode;
+      App.state.currentPriority = "";           // reset until a terms panel opens
+      renderPriorityDetail(shortcode);          // shows the categories 
+      const pillBackgroundForThisPriority = App.colors[camelfy($(this).text())];
+      App.colors.mapCircleColor = pillBackgroundForThisPriority;
+      $(":root").css("--priority-active-color", pillBackgroundForThisPriority);
+      $(":root").css("--priority-default-color", pillBackgroundForThisPriority);
+      $(":root").css("--pill-active-text-color", pickHighContrastTextColor(pillBackgroundForThisPriority));
+      $(".alignment-buttons").removeClass("active");
+      $(this).addClass("active");
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(App.els.ratioHud).removeClass("active");
+    });
+
+
+    // Make sure only one collapse is open at a time; update HUD + map fills
+    // When the button is clicked, this delegates the event to .terms, which is the div box
+    // that actually opens, not the button itself. This event is bootstrap collapse component 
+    // sending a trigger event any time a button with data-bs-toggle="collapse" is clicked.
+    $(App.els.categoryInfo).on("show.bs.collapse", ".terms", function (e) {
+      
+      $(App.els.categoryInfo).find(".collapse.show").not(e.target).collapse("hide");                 //trigger collapse to other categories that might be open
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");                              //remove active class from any previous jurisdictions
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);       //keep all circles visible
+
+      const id = this.id;                                                         //get the id attribute from this box
+      const $btn = $(`[data-bs-toggle="collapse"][data-bs-target="#${id}"]`);     //target the button that actuall initiated this open
+      $(".priorities").removeClass("active");                                     //remove previous active classes
+      $btn.addClass("active");
+
+      const $panel = $(this);
+      const priority = $panel.data("priority");
+      const jurClasses = String($panel.data("jurisdictions") || "");
+      App.state.currentPriority = priority;
+
+      for (const cls of jurClasses.split(" ").filter(Boolean)) {
+        $(`${App.els.mapRoot} #${cls}-background`).addClass("is-drawn");
+      }
+
+      $(App.els.ratioHud).addClass("active");                                                             //make the map ratio active
+      $(`${App.els.ratioHud} .ratio-figure`).text(`${jurClasses.split(" ").filter(Boolean).length}/7`);   //show the correct figure
+    });
+
+
+    //when a category collapses
+    $(App.els.categoryInfo).on("hide.bs.collapse", ".terms", function () {
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(App.els.ratioHud).removeClass("active"); 
+      $(".priorities").removeClass("active");
+      $(".jurisdiction").removeClass("active");
+    });
+
+
+
+    // Hover highlight for priorities
+    $(App.els.categoryInfo).on("pointerover", ".priorities", function () {
+
+      // $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+      // const jurClasses = String($(this).data("jurisdictions") || "");
+
+      // if($(".priorities.active").length == 0){
+      //   if ($(App.els.categoryInfo).find('.terms.show').length == 0 && $(App.els.categoryInfo).find('.terms.collapsing').length == 0) {
+      //       $(`${App.els.ratioHud} .ratio-figure`).text(`${jurClasses.split(" ").filter(Boolean).length}/7`);
+      //   }
+      //   for (const cls of jurClasses.split(" ").filter(Boolean)) {
+      //     $(`${App.els.mapRoot} #${cls}-background`).addClass('is-drawn');
+      //   }
+      //   $(App.els.ratioHud).addClass("active");
+      // }
+      
+    });
+
+    $(App.els.categoryInfo).on("pointerout", ".priorities", function () {
+      //$(`${App.els.mapRoot} .map-background-element`).attr("stroke-opacity", 0);
+      // if ($(App.els.categoryInfo).find('.terms.show').length == 0 && $(App.els.categoryInfo).find('.terms.collapsing').length == 0) {
+      //     $(`${App.els.mapRoot} .map-background-element`).removeClass('is-drawn');
+      // }
+      
+    });
+
+    // Jurisdiction click → table + map highlight
+    $(App.els.categoryInfo).on("click", ".jurisdiction", function () {
+      
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+      $(App.els.categoryInfo).removeClass("active");
+      $(this).addClass("active");
+
+      const slug = $(this).data("jurisdiction");
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+      $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+
+      App.state.wait = true; //wait for animation to complete
+
+      renderPolicyTable($(this).data("jurisdiction-raw"), App.state.currentPriority);
+
+      //scroll page to datatable
+      $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
+    });
+
+
+    $(App.els.categoryInfo).on("pointerover", ".jurisdiction", function () {
+      const slug = $(this).data("jurisdiction");
+      if(App.state.wait === false){
+        $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+        $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+        $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+      }
+    });
+
+    $(App.els.categoryInfo).on("pointerout", ".jurisdiction", function () {
+      const slug = $(this).data("jurisdiction");
+      if(App.state.wait === false){
+        $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapCircleColor);
+      }
+    });
+
+    $('svg circle, #riverside-county-background, #imperial-county-background').on("pointerover", function(){
+      const slug = $(this).attr("id").replace("-background", "");
+      if(App.state.wait === false){
+        $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+        $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+      }
+      $(`.jurisdiction[data-jurisdiction="${slug}"]`).addClass('expanded');
+    });
+
+    $('svg circle, #riverside-county-background, #imperial-county-background').on("pointerout", function(){
+      const slug = $(this).attr("id").replace("-background", "");
+      $(".jurisdiction").removeClass("expanded");
+      
+      if(App.state.wait === false){
+        $(".map-background-element").css("fill", App.colors.mapCircleColor);
+      }
+
+    });
+
+    $('svg circle, #riverside-county-background, #imperial-county-background').on("click", function(){
+      const slug = $(this).attr("id").replace("-background", "");
+      $(`.jurisdiction`).removeClass("active");
+      $(`.jurisdiction[data-jurisdiction="${slug}"]`).addClass('active');
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+      $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+
+      App.state.wait = true; 
+
+      renderPolicyTable($(`.jurisdiction[data-jurisdiction="${slug}"]`).data("jurisdiction-raw"), App.state.currentPriority);
+
+      //scroll page to datatable
+      $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
+    });
+
+
+  }
+
+  // -----------------------------
+  // Bootstrap the app
+  // -----------------------------
+  $(function () {
+    // DataTable first so it exists before we render into it
+    initDataTable();
+
+    d3.csv("{{ 'assets/data/data.csv' | url }}")
+      .then((data) => {
+        App.state.allData = data;
+        App.state.priorityIndex = buildPriorityIndex(data);
+
+        // These are still available if you need them elsewhere
+        App.state.uniquePriorities     = Array.from(d3.union(data.map(d => d["Priority Alignment"])));
+        App.state.priorityShortcodes   = Array.from(d3.union(data.map(d => d["Priority Alignment Shortcode"])));
+        App.state.priorityDescriptions = Array.from(d3.union(data.map(d => d["Priority Alignment Description"])));
+
+        // Build top-level buttons
+        updatePills(App.state.priorityShortcodes, App.state.priorityDescriptions);
+
+        //show all data in datatable
+        renderPolicyTable();
+
+        // Wire events after initial DOM exists
+        wireEvents(jQuery);
+      })
+      .catch((err) => console.error("Error loading CSV:", err));
+  });
+
+})();
+</script>

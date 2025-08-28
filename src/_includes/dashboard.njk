@@ -1,0 +1,22 @@
+
+<section id="dashboard" class="container-fluid pt-5 min-vh-100" style="background-color:#092635;">
+  <div class="row justify-content-center">
+    <div class="col-sm-6 col-12">
+      <div class="row mt-3">
+        <div class="col-12">
+          {% include "components/pills.njk" %}
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div id="category-info" class="col-12">
+          <img src="{{'/assets/images/arrow.png' | url}}" width="200" height="auto" alt="arrow" style="margin-left:50%;margin-top:-50px;">
+          <h2>Instructions:</h2>
+          <p>Start by clicking on one of the alignments above. Then drill down further into some of the policy priorities to understand which communities have policies that promote those themes.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-12">
+      {% include "components/map.njk" %}
+    </div>
+  </div>
+</section>

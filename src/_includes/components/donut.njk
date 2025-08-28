@@ -1,0 +1,311 @@
+<div id="chart"></div>
+<script>
+
+
+
+let data = [
+  { 
+    name: "Green Spaces",    
+    color: "#F3F6FB", 
+    textColor: "#000000", 
+    value: 1,
+    fullTitle: "Enhancing Access to Green Spaces",
+    labels: [
+      {
+        title:"Bicycle and Pedestrian Network",
+        value: "7/7"
+      },
+      {
+        title:"Natural Resources as a Tool",
+        value: "6/7"
+      },
+      {
+        title:"Greenway and Buffer Zones",
+        value: "5/7"
+      },
+      {
+        title:"Improved Amenities and Connectivity to Parks",
+        value: "6/7"
+      }
+    ]
+  },
+  { 
+    name: "Air Quality",     
+    color: "#002C4B", 
+    textColor: "#ffffff", 
+    value: 1,
+    fullTitle: "Improving Air Quality with Smarter Transportation",
+    labels: [
+      {
+        title:"Transportation Demand ",
+        value: "7/7"
+      },
+      {
+        title:"Integration of Air Quality and Land Use Planning",
+        value: "6/7"
+      },
+      {
+        title:"Improving Air Quality Through Transportation Improvements",
+        value: "6/7"
+      },
+      {
+        title:"Reduction of Greenhouse Gas Emissions",
+        value: "6/7"
+      },
+      {
+        title:"Regulation of Industrial Activities",
+        value: "6/7"
+      }
+    ]
+  },
+  { 
+    name: "Infrastructure",  
+    color: "#355679", 
+    textColor: "#ffffff", 
+    value: 1,
+    fullTitle: "Tackling Infrastructure Gaps",
+    labels: [
+      {
+        title:"Infrastructure Required for Economic Development",
+        value: "7/7"
+      },
+      {
+        title:"Communitiy Facilities",
+        value: "7/7"
+      },
+      {
+        title:"Trail Systems",
+        value: "5/7"
+      },
+      {
+        title:"Pedestrian Pathways",
+        value: "7/7"
+      },
+      {
+        title:"Local Drainage Systems",
+        value: "6/7"
+      },
+      {
+        title:"Flooding Infrastructure",
+        value: "7/7"
+      }
+    ]
+  },
+  { 
+    name: "Agriculture",     
+    color: "#94A6B4", 
+    textColor: "#000000", 
+    value: 1,
+    fullTitle: "Sustaining the Agriculture Industry",
+    labels: [
+      {
+        title:"Land Conservation",
+        value: "7/7"
+      },
+      {
+        title:"Agrotourism and Urban Agriculture",
+        value:"7/7"
+      },
+      {
+        title:"Renewable Energy",
+        value:"6/7"
+      },
+      {
+        title:"Infrastructure Support",
+        value:"7/7"
+      },
+      {
+        title:"Buffering",
+        value:"7/7"
+      },
+      {
+        title:"Water Quality and Conservation",
+        value:"6/7"
+      }
+    ]
+  }
+];
+
+//is the donut chart currently selected?
+let donutSelected = false;
+
+(function () {
+
+  const width = 360;
+  const height = 360;
+  const radius = Math.min(width, height) / 2;
+  const outerRadius = radius * 0.97;     // donut outer radius
+  const innerRadius = radius * 0.45;  // donut thickness
+
+  const pie = d3.pie()
+    .sort(null)
+    .value(d => d.value)
+    .padAngle(0.015);
+
+  const arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+  const svg = d3.select("#chart")
+    .append("svg")
+    .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
+    .attr("width", "100%")      // fill container
+    .attr("height", "100%")     // fill container
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("role", "img")
+    .attr("aria-labelledby", "donut-title");
+
+  svg.append("title").attr("id", "donut-title").text("Areas of Priority Alignment");
+
+  const g = svg.append("g");
+
+  const key = d => d.data.name;
+
+  const pieData = pie(data);
+
+  const slices = g.selectAll("path.slice")
+      .data(pieData, key)
+      .enter();
+
+  slices.append("path")
+      .attr("class", "slice")
+      .attr("fill", d => d.data.color)
+      .attr("stroke-width", 10)
+      .attr("stroke-opacity", 0)
+      .attr("stroke", "black")
+      .style("cursor", "pointer")
+      //.each(function (d) { this._current = d; })
+      .attr("d", arc)
+      .on("pointerenter", function(event, d){
+        const thisSlice = d3.select(this);
+        const currentColor = d3.color(thisSlice.attr("fill"));
+        const hsl = d3.hsl(currentColor);
+        const newColor = hsl.l > 0.75 ? Math.max(0, hsl.l - 0.25) : Math.min(1, hsl.l + 0.20); //if dark, lighten, otherwise darken
+        thisSlice.attr("fill", d3.hsl(hsl.h, hsl.s, newColor).rgb().formatHex());
+      })
+      .on("pointerleave", function(event, d){
+        const thisSlice = d3.select(this);
+        thisSlice.attr("fill", d => d.data.color)
+      })
+      .on("click", function(event, d){
+        const thisSlice = d3.select(this);
+
+        if(thisSlice.attr("stroke-opacity") == 1){
+          thisSlice.attr("stroke-opacity", 0)
+          updatePills([])
+          donutSelected = false;
+        } else {
+          d3.selectAll(".slice")
+            .attr("stroke-opacity", 0);
+          thisSlice.attr("stroke-opacity", 1)
+          updatePills(d.data.labels)
+          donutSelected = true;
+        }
+
+
+
+
+
+        // thisSlice.style("stroke-opacity", 1)
+        // thisSlice.style("stroke", "black")
+        // donutSelected = true;
+        // if(donutSelected === true){
+        //   thisSlice.style("stroke-opacity", 0)
+        //   donutSelected = false;
+        // }
+        //thisSlice
+      })
+      .append("title").text(d => `${d.data.name}: ${d.data.value}`); //accessibilty
+
+  slices.append("text")
+      .attr("class", "slice-label")
+      .style("font", "19px Roboto, Helvetica, Arial, sans-serif")
+      .style("fill", d => d.data.textColor)
+      .style("pointer-events", "none")
+      .attr("dy", "0.45em")
+      .attr("text-anchor", d => "middle")//labelAnchor(d)
+      .attr("x", d => arc.centroid(d)[0])
+      .attr("y", d => arc.centroid(d)[1])
+      .text(d => d.data.name)
+      //.each(function (d) { this._current = d; });
+
+
+
+
+  // ----- Update function (animates slices + labels) -----
+  // function updateDonut(newData, duration = 800) {
+  //   const pieData = pie(newData);
+
+  //   // 1) Slices
+  //   const paths = g.selectAll("path.slice").data(pieData, key);
+
+  //   const merged = paths.join(
+  //     enter => enter.append("path")
+  //       .attr("class", "slice")
+  //       .attr("fill", d => d.data.color)
+  //       .style("stroke-width", 0)
+  //       .each(function (d) { this._current = this._current || d; })
+  //       .attr("d", arc)
+  //       .call(sel => sel.append("title").text(d => `${d.data.name}: ${d.data.value}`)),
+  //     update => update
+  //       .attr("fill", d => d.data.color)
+  //       .call(sel => sel.select("title").text(d => `${d.data.name}: ${d.data.value}`)),
+  //     exit => exit
+  //       .transition().duration(duration)
+  //       .attrTween("d", function (d) {
+  //         const end = { ...d, startAngle: d.endAngle };
+  //         const i = d3.interpolate(this._current, end);
+  //         return t => arc(i(t));
+  //       })
+  //       .remove()
+  //   );
+
+  //   merged.transition().duration(duration)
+  //     .attrTween("d", function (d) {
+  //       const i = d3.interpolate(this._current, d);
+  //       this._current = i(0);
+  //       return t => arc(i(t));
+  //     });
+
+  //   // 2) Labels
+  //   const labelSel = gLabels.selectAll("text.slice-label").data(pieData, key);
+
+  //   labelSel.join(
+  //     enter => enter.append("text")
+  //       .attr("class", "slice-label")
+  //       .attr("dy", "0.35em")
+  //       .attr("text-anchor", d => labelAnchor(d))
+  //       .attr("x", d => labelPos(d)[0])
+  //       .attr("y", d => labelPos(d)[1])
+  //       .text(d => d.data.name)
+  //       .each(function (d) { this._current = this._current || d; }),
+  //     update => update
+  //       .text(d => d.data.name),
+  //     exit => exit.remove()
+  //   )
+  //   .transition().duration(duration)
+  //     .tween("pos", function (d) {
+  //       // Smoothly move the label position
+  //       const i = d3.interpolate(this._current, d);
+  //       const sel = d3.select(this);
+  //       return function (t) {
+  //         const a = i(t);
+  //         const [x, y] = labelPos(a);
+  //         sel.attr("x", x).attr("y", y);
+  //       };
+  //     })
+  //     .on("end", function (d) {
+  //       // Update anchor at the end (left vs right side)
+  //       d3.select(this).attr("text-anchor", labelAnchor(d));
+  //       this._current = d;
+  //     });
+  // }
+
+  // Expose a global function you can call after changing `data`
+  //window.updateDonut = updateDonut;
+
+  // Example:
+  // data[0].value = 42;
+  // updateDonut(data); // animates slices and labels
+})();
+</script>

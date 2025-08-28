@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="uft-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thriving Salton Sea</title>
+  <link rel="stylesheet" href="{{ '/assets/css/main.css?2' | url }}">
+
+</head>
+<body>
+
+{% include "hero.njk" %}
+
+{% include "navigation.njk" %}
+
+{% include "video-opener.njk" %}
+
+{% include "instructions.njk" %}
+
+{% include "dashboard.njk" %}
+
+{% include "data-table.njk" %}
+
+
+
+{% include "footer.njk" %}
+
+<script src="{{ '/assets/js/d3.v7.min.js' | url }}"></script>
+<script src="{{ '/assets/js/jquery-3.7.1.min.js' | url }}"></script>
+<script src="{{ '/assets/js/bootstrap.bundle.min.js' | url }}"></script>
+<script src="{{ '/assets/js/datatables.min.js' | url }}"></script>
+{% include "components/data.njk" %}
+</body>
+</html>
