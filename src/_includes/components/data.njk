@@ -458,6 +458,50 @@
   }
 
   // -----------------------------
+  // Video caption button
+  // -----------------------------
+  const video = $("video").get(0);   // raw DOM element
+  const tracks = video.textTracks;   // TextTrackList
+
+  // Hide all tracks initially
+  // $.each(tracks, function (i, track) {
+  //   track.mode = "hidden";
+  // });
+
+  // Handle clicks on dropdown items
+  $(".caption-drop-down .dropdown-item").on("click", function () {
+    const lang = $(this).text().trim(); // "English" or "Español"
+
+    //caption already showing, remove it.
+    if($(this).hasClass("active")){
+
+      $(this).removeClass("active");
+
+      $.each(tracks, function (i, track) {
+        track.mode = "hidden";
+      });
+
+      return;
+    }
+
+    $(".caption-drop-down .dropdown-item").removeClass("active");
+    $(this).addClass("active").attr("aria-current", true);
+
+    // Hide all first
+    $.each(tracks, function (i, track) {
+      track.mode = "hidden";
+    });
+
+    // Show the chosen one
+    $.each(tracks, function (i, track) {
+      if (track.label === lang) {
+        track.mode = "showing";
+        return false; // break
+      }
+    });
+  });
+
+  // -----------------------------
   // Bootstrap the app
   // -----------------------------
   $(function () {
