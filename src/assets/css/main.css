@@ -20214,10 +20214,9 @@ section[role=main] {
   background-repeat: no-repeat;
   position: relative;
 }
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   section[role=main] {
-    background-size: contain, cover;
-    background-position: left center, center;
+    background-image: url("../../assets/images/hero-vertical.png"), url("../../assets/images/blue-relief.png");
   }
 }
 
