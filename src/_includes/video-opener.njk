@@ -4,29 +4,39 @@
 
     <div class="row justify-content-center my-4">
       <div class="col-12">
-        <video controls preload="metadata" width="100%" height="auto" poster="{{ 'assets/images/poster.jpg' | url }}">
-          <source src="{{ '/assets/images/salton-sea-opener.webm' | url }}" type='video/webm; codecs="vp9, opus"'>
-          <source src="{{ '/assets/images/salton-sea-opener.mp4' | url }}" type='video/mp4; codecs="avc1.640028, mp4a.40.2"'>
+        <video controls preload="metadata" width="100%" height="auto" poster="{{ 'assets/images/poster.jpg' | url }}" data-current-language="english">
+          <source src="{{ '/assets/images/salton-sea-opener-english.mp4' | url }}" type='video/mp4; codecs="avc1.640028, mp4a.40.2"'>
           <track
             label="English"
             kind="subtitles"
             srclang="en"
-            src="{{ '/assets/images/salton-sea-opener-english.vtt' | url }}"
-            default />
+            src="{{ '/assets/images/salton-sea-opener-english.vtt' | url }}" />
           <track
             label="Español"
             kind="subtitles"
             srclang="es"
             src="{{ '/assets/images/salton-sea-opener-spanish.vtt' | url }}" />
         </video>
-        <div class="btn-group float-end">
-          <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-badge-cc"></i> Captions
-          </button>
-          <ul class="caption-drop-down dropdown-menu dropdown-menu-dark dropdown-menu-end">
-            <li><button class="dropdown-item active" type="button">English</button></li>
-            <li><button class="dropdown-item" type="button">Español</button></li>
-          </ul>
+        <div class="btn-group float-end" role="group">
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-translate"></i> Language
+            </button>
+            <ul class="language-drop-down dropdown-menu dropdown-menu-dark dropdown-menu-end">
+              <li><button class="dropdown-item active" data-language="english" type="button">English</button></li>
+              <li><button class="dropdown-item" data-language="spanish" type="button">Español</button></li>
+            </ul>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-badge-cc"></i> Captions
+            </button>
+            <ul class="caption-drop-down dropdown-menu dropdown-menu-dark dropdown-menu-end">
+              <li><button class="dropdown-item" type="button">English</button></li>
+              <li><button class="dropdown-item" type="button">Español</button></li>
+              <li><button class="dropdown-item active" type="button">Turn off</button></li>
+            </ul>
+          </div>
         </div>
      </div>
     </div>

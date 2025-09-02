@@ -40,6 +40,14 @@ $bootstrap-icons-font-dir: "../fonts";
   background-color: var(--light-background, #CFDFEB);
 }
 
+.dark-blue-bg{
+  background-color: var(--dark-background, #5E7B9A);
+}
+
+.text-white{
+  color: #ffffff;
+}
+
 .hero-text{
   color: var(--hero-text, #516A88);
 }
@@ -220,5 +228,17 @@ section[role="main"]{
 @media (prefers-reduced-motion: reduce) {
   .map-background-element {
     transition: none;
+  }
+}
+
+
+#regional-engagement-at-the-salton-sea button{
+  width: 100%;
+  display: block;
+  @include media-breakpoint-up(sm) {
+    width: 75%
+  }
+  @include media-breakpoint-up(lg) {
+    width: 50%
   }
 }

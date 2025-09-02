@@ -32,7 +32,8 @@
       mapSelectedColor: "#142a3f",
       pillActiveTextColor: "#000000",
       heroText: "#516A88",
-      lightBackground: "#CFDFEB"
+      lightBackground: "#CFDFEB",
+      darkBlueBackground: "#5E7B9A"
     }
   };
 
@@ -41,6 +42,7 @@
   $(":root").css("--pill-active-text-color", App.colors.pillActiveTextColor);
   $(":root").css("--hero-text", App.colors.heroText);
   $(":root").css("--light-background", App.colors.lightBackground);
+  $(":root").css("--dark-background", App.colors.darkBlueBackground);
   $(":root").css("--alignment-infrastructure-bg-color", App.colors.infrastructure);
   $(":root").css("--alignment-agriculture-bg-color", App.colors.agriculture);
   $(":root").css("--alignment-green-spaces-bg-color", App.colors.greenSpaces);
@@ -283,7 +285,7 @@
 
     // header text
     const hdr = jurisdictionRaw && sharedPriority
-      ? `Showing ${App.state.currentAlignment} policies for <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">${jurisdictionRaw}</span> related to <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">${sharedPriority}</span>`
+      ? `Showing ${App.state.currentAlignment} policies for <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">&nbsp;${jurisdictionRaw}&nbsp;</span> related to <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">&nbsp;${sharedPriority}&nbsp;</span>`
       : jurisdictionRaw
         ? `Showing policies for ${jurisdictionRaw}`
         : sharedPriority
@@ -460,13 +462,58 @@
   // -----------------------------
   // Video caption button
   // -----------------------------
-  const video = $("video").get(0);   // raw DOM element
+  const $video = $("video");
+  const video = $video.get(0);   // raw DOM element
   const tracks = video.textTracks;   // TextTrackList
 
-  // Hide all tracks initially
-  // $.each(tracks, function (i, track) {
-  //   track.mode = "hidden";
-  // });
+  //Changing current language on video. The <video> tag has a current-language attribute
+  //Each button has a data-language attribute for the language to switch
+  $(".language-drop-down button.dropdown-item").on("click", function () {
+
+    const languageSources = {
+      "english" : "{{ '/assets/images/salton-sea-opener-english.mp4' | url }}",
+      "spanish" : "{{ '/assets/images/salton-sea-opener-spanish.mp4' | url }}"
+    }
+    const currentLang = $video.data("current-language"); //get current 
+    const newLang = $(this).data("language");
+    const wasPlaying = !video.paused && !video.ended;
+    const t = video.currentTime;
+
+    // If already on this source, do nothing
+    if (currentLang === newLang) return;
+
+    const source = $video.find("source").get(0);
+    if (source) {
+      source.src = languageSources[`${newLang}`]; //change the src with the other language
+      video.load();
+    } else {
+      video.src = languageSources[`${newLang}`];
+    }
+
+    //change current language for next time
+    $video.attr("data-current-language", newLang);
+    $video.data("current-language", newLang);
+
+    console.log($video.data("current-language"));
+
+    //change active button
+    $(".language-drop-down button.dropdown-item").removeClass("active");
+    $(this).addClass("active");
+
+    // When metadata is ready, restore time and play state
+    const onLoaded = () => {
+      // Clamp time within duration in case lengths differ a bit
+      const seekTo = Math.min(t, Math.max(0, (video.duration || t)));
+      try { video.currentTime = seekTo; } catch (e) {}
+      if (wasPlaying) video.play().catch(() => {/* ignore autoplay block */});
+      video.removeEventListener("loadedmetadata", onLoaded);
+    };
+    video.addEventListener("loadedmetadata", onLoaded);
+
+
+
+  });
+
 
   // Handle clicks on dropdown items
   $(".caption-drop-down .dropdown-item").on("click", function () {

@@ -20199,6 +20199,14 @@ textarea.form-control-lg {
   background-color: var(--light-background, #CFDFEB);
 }
 
+.dark-blue-bg {
+  background-color: var(--dark-background, #5E7B9A);
+}
+
+.text-white {
+  color: #ffffff;
+}
+
 .hero-text {
   color: var(--hero-text, #516A88);
 }
@@ -20357,6 +20365,20 @@ section[role=main] {
 @media (prefers-reduced-motion: reduce) {
   .map-background-element {
     transition: none;
+  }
+}
+#regional-engagement-at-the-salton-sea button {
+  width: 100%;
+  display: block;
+}
+@media (min-width: 576px) {
+  #regional-engagement-at-the-salton-sea button {
+    width: 75%;
+  }
+}
+@media (min-width: 992px) {
+  #regional-engagement-at-the-salton-sea button {
+    width: 50%;
   }
 }
 
