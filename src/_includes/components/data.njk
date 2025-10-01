@@ -20,7 +20,9 @@
       mapRoot:       "#salton_sea_map",
       ratioHud:      "#alignment-value-ratio",
       dataTable:     "#policy-table",
-      dataHeader:    "#data-table-header"
+      dataHeader:    "#data-table-header",
+      strategyMapText: "#strategy-map-text",
+      infoButton:    '<i id="reset-info" class="bi bi-skip-backward position-absolute top-0 end-0 z-1 fs-4" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Reset view."></i>'
     },
     colors: {
       airQuality: "#5192E2",
@@ -51,10 +53,28 @@
   // -----------------------------
   // Utilities
   // -----------------------------
+  
+  // turn "Salton Sea" into "salton-sea"
   const slugify = (s) => String(s).trim().toLowerCase().split(/\s+/).join("-"); //use jurisdictions as class names sometimes,
+  
+  // turn "Salton Sea" into "saltonSea"
   const camelfy = s => String(s).trim().toLowerCase().split(/\s+/).map((w, i) => i === 0 ? w : w[0].toUpperCase() + w.slice(1)).join("");
+  
+  // turn ["Salton Sea", "Coachella", "Brawley"] to "salton-sea coachella brawley"
   const classListFromStrings = (arr) => arr.map(j => slugify(j)).join(" ");
+  
+  // turn " Salton Sea " to "salton sea"
+  const norm = s => String(s).trim().toLowerCase(); //normalizer
 
+  //turn arr to comma-separated string with "and." Example: ["Salton Sea", "Coachella", "Brawley"] to "Salton Sea, Coachella, and Brawley"
+  const joinWithAnd = (arr = []) =>
+    !Array.isArray(arr) ? "" :
+    arr.length === 0 ? "" :
+    arr.length === 1 ? String(arr[0]) :
+    arr.length === 2 ? `${arr[0]} and ${arr[1]}` :
+    `${arr.slice(0, -1).join(", ")}, and ${arr.at(-1)}`;
+
+  //hex to RGB so to detect whether text will show on light backgrounds
   const hexToRgb = hex => {
     let h = String(hex).replace('#', '').trim();
     if (h.length === 3) h = h.split('').map(ch => ch + ch).join('');
@@ -76,7 +96,6 @@
     const contrastBlack = (L + 0.05) / 0.05;
     return contrastWhite > contrastBlack ? light : dark;
   };
-
 
 
   const firstOfSet = (setLike) =>
@@ -118,6 +137,62 @@
     d => d["Priority Alignment Shortcode"]
   );
 
+  /**
+   * Build once: strategy token → array of source rows
+   * Returns a function(strategy, [filter]) -> unique jurisdictions[]
+   *
+   * filter is an optional object like:
+   *   { "Priority Alignment Shortcode": "Green Spaces" }
+   *   { "Jurisdiction": ["Brawley","Coachella"] }
+   *   { "Priority Alignment": /Green/i }
+   *   { "Priority Alignment": v => v && v.startsWith("Green") }
+   */
+  const buildJurisdictionsFromStrategy = (rows) => {
+    const byStrategy = new Map(); // normalized strategy -> rows[]
+
+    for (const r of rows) {
+      const list = r?.["Strategy List"];
+      if (!list) continue;
+      for (const t of list.split(",").map(s => norm(s)).filter(Boolean)) {
+        if (!byStrategy.has(t)) byStrategy.set(t, []);
+        byStrategy.get(t).push(r);
+      }
+    }
+
+    // flexible matcher for filter values
+    const matches = (cell, rule) => {
+      if (rule == null) return true;
+      if (typeof rule === 'function') return !!rule(cell);
+      if (rule instanceof RegExp) return rule.test(String(cell ?? ''));
+      if (Array.isArray(rule))   return rule.includes(cell);
+      return cell === rule; // strict equality by default
+    };
+
+    // The callable
+    const getJurisdictionsFromStrategy = (strategy, filter = null) => {
+      if (!strategy) return [];
+      const rowsForStrategy = byStrategy.get(norm(strategy)) || [];
+      let filtered = rowsForStrategy;
+
+      if (filter && typeof filter === 'object') {
+        filtered = rowsForStrategy.filter(row =>
+          Object.entries(filter).every(([col, rule]) => matches(row?.[col], rule))
+        );
+      }
+
+      // unique jurisdictions, sorted
+      const set = new Set(filtered.map(r => r?.["Jurisdiction"]).filter(Boolean));
+      return Array.from(set).sort(d3.ascending);
+    };
+
+    // Optional helpers
+    getJurisdictionsFromStrategy.keys = () => Array.from(byStrategy.keys()).sort();
+    getJurisdictionsFromStrategy.size = byStrategy.size;
+
+    return getJurisdictionsFromStrategy;
+  };
+
+
   // -----------------------------
   // UI: Top pill buttons
   // -----------------------------
@@ -133,8 +208,7 @@
       
       //customize the individual svg icons by editing the .svg files in the images folder. Keep names based on slugs.
       $col.append(`
-        <div
-          class="pill-labels mb-3 d-block"
+        <div class="pill-labels mb-3 d-block position-relative"
           style="background-image:url('{{ '/assets/images/' | url }}${slug}.svg');">
         </div>
       `);
@@ -162,7 +236,9 @@
     const para  = firstOfSet(node.alignmentDescription) || "";
 
     const sharedPriorities = Array.from(node.sharedPriorities || []);
-    const $info = $(App.els.categoryInfo).empty();
+    const $info = $(App.els.categoryInfo).empty(); //remove instructions
+
+    $info.append(App.els.infoButton); //add info icon
 
     $info.append(`<h2>${title}</h2><p>${para}</p>`);
 
@@ -263,7 +339,24 @@
             if (!data) return "";
             return String(data)
               .split(",")
-              .map(item => `<span class="badge text-wrap text-bg-secondary me-1 mb-1 lh-sm text-start">${toTitleCase(item.trim())}</span>`)
+              .map(function(item){ 
+                
+                const jurisdictionsForThisBadge = App.state.currentPriority ? App.state.getJurisdictionsFromStrategy(item.trim(), {"Shared Priorities": App.state.currentPriority}) : App.state.getJurisdictionsFromStrategy(item.trim());
+                const haveOrHas = jurisdictionsForThisBadge.length > 1 ? 'have' : 'has';
+                const numOfJurisdictionsForThisBadge = `${String(jurisdictionsForThisBadge.length)}/7 communities`;
+
+                if(jurisdictionsForThisBadge.length === 0){
+                  return `<span class="badge strategy-badge text-wrap text-bg-secondary me-1 mb-1 lh-sm text-start">${toTitleCase(item.trim())}</span>`;
+                } else {
+                
+                  return `<span class="badge strategy-badge strategy-badge-clickable text-wrap text-bg-secondary me-1 mb-1 lh-sm text-start" 
+                            data-bs-toggle="tooltip"
+                            data-bs-title="${joinWithAnd(jurisdictionsForThisBadge)} ${haveOrHas} this strategy.<br/><br/> ${numOfJurisdictionsForThisBadge}"
+                            data-strategy-jurisdictions="${jurisdictionsForThisBadge.join(", ")}">
+                            ${toTitleCase(item.trim())}
+                          </span>`;
+                }
+              })
               .join(" ");
           }
         }
@@ -301,10 +394,16 @@
   // Event wiring 
   // -----------------------------
   function wireEvents($) {
-    // Top-level category click
+
+    //trigger click when clicking on icons as well
+    $(document).on("click", ".pill-labels", function(){
+      $(this).siblings(".alignment-buttons").trigger("click");
+    })
+
+    // Top-level category clicks 
     $(document).on("click", ".alignment-buttons", function () {
-      const shortcode = $(this).text().trim(); // button text is the shortcode, i.e. green spaces
-      App.state.currentAlignment = shortcode;
+      const shortcode = $(this).text().trim(); // button text is the shortcode, e.g. "green spaces" or "air quality"
+      App.state.currentAlignment = shortcode;   //save shortcode in currentAlignment
       App.state.currentPriority = "";           // reset until a terms panel opens
       renderPriorityDetail(shortcode);          // shows the categories 
       const pillBackgroundForThisPriority = App.colors[camelfy($(this).text())];
@@ -313,9 +412,54 @@
       $(":root").css("--priority-default-color", pillBackgroundForThisPriority);
       $(":root").css("--pill-active-text-color", pickHighContrastTextColor(pillBackgroundForThisPriority));
       $(".alignment-buttons").removeClass("active");
+      $(`${App.els.strategyMapText} tspan`).empty();
       $(this).addClass("active");
       $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
       $(App.els.ratioHud).removeClass("active");
+    });
+
+    //reset everything
+    $(document).on("click", "#reset-info", function(){
+
+      const tooltip = bootstrap.Tooltip.getInstance('#reset-info')
+      tooltip.hide()
+
+      console.log("works")
+      $(App.els.categoryInfo).empty();
+      $(App.els.dataHeader).empty();
+
+
+
+      App.colors.mapCircleColor = App.colors.priorityDefault
+      $(":root").css("--priority-active-color", App.colors.priorityDefault);
+      $(":root").css("--priority-default-color", App.colors.priorityDefault);
+
+      const img = $("<img />");
+      img.attr("src", "assets/images/arrow.png");
+      img.attr("alt", "arrow showing where to click");
+      img.attr("width", "200");
+      img.attr("height", "auto");
+      img.css({marginLeft:"50%", marginTop:"-50px"});
+
+      const h2 = $("<h2 />");
+      h2.text("Instructions:");
+
+      const p = $("<p />");
+      p.text("Start by clicking on one of the alignments above. Then drill down further into some of the policy priorities to understand which communities have policies that promote those themes.")
+
+      $(App.els.categoryInfo).append(img);
+      $(App.els.categoryInfo).append(h2);
+      $(App.els.categoryInfo).append(p);
+
+      //remove classes to reset everything
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(`${App.els.strategyMapText} tspan`).empty();
+      $(App.els.ratioHud).removeClass("active"); 
+      $(".priorities").removeClass("active");
+      $(".jurisdiction").removeClass("active");
+      $(".alignment-buttons").removeClass("active");
+
     });
 
 
@@ -328,6 +472,7 @@
       $(App.els.categoryInfo).find(".collapse.show").not(e.target).collapse("hide");                 //trigger collapse to other categories that might be open
       $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");                              //remove active class from any previous jurisdictions
       $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);       //keep all circles visible
+      $(`${App.els.strategyMapText} tspan`).empty();
 
       const id = this.id;                                                         //get the id attribute from this box
       const $btn = $(`[data-bs-toggle="collapse"][data-bs-target="#${id}"]`);     //target the button that actuall initiated this open
@@ -345,12 +490,14 @@
 
       $(App.els.ratioHud).addClass("active");                                                             //make the map ratio active
       $(`${App.els.ratioHud} .ratio-figure`).text(`${jurClasses.split(" ").filter(Boolean).length}/7`);   //show the correct figure
+      $(`${App.els.ratioHud} #priority-word`).text("priority");
     });
 
 
     //when a category collapses
     $(App.els.categoryInfo).on("hide.bs.collapse", ".terms", function () {
       $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(`${App.els.strategyMapText} tspan`).empty();
       $(App.els.ratioHud).removeClass("active"); 
       $(".priorities").removeClass("active");
       $(".jurisdiction").removeClass("active");
@@ -387,6 +534,7 @@
     // Jurisdiction click → table + map highlight
     $(App.els.categoryInfo).on("click", ".jurisdiction", function () {
       
+      $(`${App.els.strategyMapText} tspan`).empty();
       $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
       $(App.els.categoryInfo).removeClass("active");
       $(this).addClass("active");
@@ -442,6 +590,7 @@
 
     $('svg circle, #riverside-county-background, #imperial-county-background').on("click", function(){
       const slug = $(this).attr("id").replace("-background", "");
+      $(`${App.els.strategyMapText} tspan`).empty();
       $(`.jurisdiction`).removeClass("active");
       $(`.jurisdiction[data-jurisdiction="${slug}"]`).addClass('active');
       $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
@@ -455,6 +604,48 @@
       $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
       const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
     });
+
+
+    $("#datatable").on("click", ".strategy-badge", function(){
+
+      console.log($(this).data())
+      
+      const jurClasses = $(this).data("strategy-jurisdictions");
+
+      $(`${App.els.ratioHud} .ratio-figure`).text(`${jurClasses.split(", ").filter(Boolean).length}/7`);
+      $(`${App.els.ratioHud} #priority-word`).text("strategy");
+
+      //split strategy text into chunks of 70 characters
+      const strategyText = `The following regions that have policies that include the strategy, "${$(this).text().trim()}."`;
+      const strategyTextArr = strategyText.split(" ").reduce((a,w) =>
+        (a[a.length-1].length + w.length + 1 <= 70
+          ? a[a.length-1] += (a[a.length-1] ? " " : "") + w
+          : a.push(w), a), [""]);
+
+      $(`${App.els.strategyMapText} tspan`).each((i, el) => $(el).text(strategyTextArr[i] || ""));
+
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(App.els.categoryInfo).removeClass("active");
+      $(App.els.ratioHud).addClass("active"); 
+      $(".priorities").removeClass("active");
+      $(".jurisdiction").removeClass("active");
+
+      const slug = $(this).data("jurisdiction");
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+      $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+
+      for (const cls of jurClasses.split(", ").filter(Boolean)) {
+        $(`${App.els.mapRoot} #${slugify(cls)}-background`).addClass("is-drawn");
+      }
+
+      App.state.wait = true; //wait for animation to complete
+
+      //scroll page to datatable
+      $("html, body").stop().animate({scrollTop: $("#dashboard").offset().top - 140}, 300);
+      const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
+
+    })
 
 
   }
@@ -548,6 +739,13 @@
     });
   });
 
+  document.addEventListener("DOMContentLoaded", () => {
+    new bootstrap.Tooltip(document.body, {
+      selector: '[data-bs-toggle="tooltip"]',
+      html: true
+    });
+  });
+
   // -----------------------------
   // Bootstrap the app
   // -----------------------------
@@ -564,6 +762,9 @@
         App.state.uniquePriorities     = Array.from(d3.union(data.map(d => d["Priority Alignment"])));
         App.state.priorityShortcodes   = Array.from(d3.union(data.map(d => d["Priority Alignment Shortcode"])));
         App.state.priorityDescriptions = Array.from(d3.union(data.map(d => d["Priority Alignment Description"])));
+
+        //when given a specific strategy, get all of the jurisdictions that also have that strategy
+        App.state.getJurisdictionsFromStrategy = buildJurisdictionsFromStrategy(data);
 
         // Build top-level buttons
         updatePills(App.state.priorityShortcodes, App.state.priorityDescriptions);

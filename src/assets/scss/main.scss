@@ -33,6 +33,8 @@ $headings-font-weight: 100;
 $font-family-sans-serif: 'Helvetica Neue', Arial, sans-serif;
 $bootstrap-icons-font-dir: "../fonts";
 
+$tooltip-color: #ffffff;
+
 @import "bootstrap-icons/font/bootstrap-icons";
 @import "bootstrap/scss/bootstrap";
 
@@ -114,6 +116,10 @@ section[role="main"]{
   }
 }
 
+#reset-info{
+  cursor: pointer;
+}
+
 .pill-labels{
   height:0;
   padding-bottom:45%;
@@ -121,9 +127,10 @@ section[role="main"]{
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  cursor: pointer;
 }
 
-.pills{
+.pills, .strategy-badge{
   position: relative;
   z-index: 0;
 }
@@ -132,7 +139,7 @@ section[role="main"]{
   border: none;
 }
 
-.pills::before {
+.pills::before, .strategy-badge::before {
   content: "";
   position: absolute;
   border-radius: var(--bs-border-radius-lg) !important;
@@ -158,11 +165,13 @@ section[role="main"]{
   background: var(--alignment-air-quality-bg-color, #526977); 
 } 
 
-.pills:hover::before {
+.pills:hover::before, 
+.strategy-badge:hover::before,
+.pill-labels:hover + .pills::before {
   width: 100%;            /* expand to full width */
 }
 
-.pills:hover{
+.pills:hover, .strategy-badge:hover{
   color: var(--pill-active-text-color, black) !important;
 }
 
@@ -241,4 +250,8 @@ section[role="main"]{
   @include media-breakpoint-up(lg) {
     width: 50%
   }
+}
+
+.strategy-badge-clickable{
+  cursor: pointer;
 }
