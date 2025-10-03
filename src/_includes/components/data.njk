@@ -331,6 +331,7 @@
       columns: [
         { data: "Jurisdiction", defaultContent: "" },
         { data: "Policy Identifier", defaultContent: "" },
+        { data: "Policy Category", defaultContent: "" },
         { data: "Policy Description", defaultContent: "", className: "text-wrap" },
         {
           data: "Strategy List",
@@ -364,18 +365,34 @@
       columnDefs: [
         { targets: 0, responsivePriority: 3 },
         { targets: 1, responsivePriority: 1 },
-        { targets: 2, responsivePriority: 1 },
-        { targets: 3, responsivePriority: 1 }
+        { targets: 2, responsivePriority: 3 },
+        { targets: 3, responsivePriority: 1 },
+        { targets: 4, responsivePriority: 1 }
       ]
     });
   } 
 
+  /**
+   * Show Data table
+   * 
+   * @param {string} jurisdictionRaw - (Optional) The name of the jurisdiction (i.e. calipatria)
+   * @param {string} sharedPriority - (Optional) The name of the shared priority
+   */
   function renderPolicyTable(jurisdictionRaw = null, sharedPriority = null) {
-    const rows = App.state.allData.filter(d =>
-      (!jurisdictionRaw || d["Jurisdiction"] === jurisdictionRaw) &&
-      (!sharedPriority || d["Shared Priorities"] === sharedPriority)
-    );
 
+    const rows = App.state.allData.filter(d => {
+      let match = true;
+
+      if (jurisdictionRaw !== null && jurisdictionRaw !== "") {
+        match = match && d["Jurisdiction"] === jurisdictionRaw;
+      }
+
+      if (sharedPriority !== null && sharedPriority !== "") {
+        match = match && d["Shared Priorities"] === sharedPriority;
+      }
+
+      return match;
+    });
     // header text
     const hdr = jurisdictionRaw && sharedPriority
       ? `Showing ${App.state.currentAlignment} policies for <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">&nbsp;${jurisdictionRaw}&nbsp;</span> related to <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">&nbsp;${sharedPriority}&nbsp;</span>`
@@ -424,11 +441,11 @@
       const tooltip = bootstrap.Tooltip.getInstance('#reset-info')
       tooltip.hide()
 
-      console.log("works")
+
       $(App.els.categoryInfo).empty();
       $(App.els.dataHeader).empty();
 
-
+      App.state.currentPriority = "";
 
       App.colors.mapCircleColor = App.colors.priorityDefault
       $(":root").css("--priority-active-color", App.colors.priorityDefault);
@@ -589,6 +606,7 @@
     });
 
     $('svg circle, #riverside-county-background, #imperial-county-background').on("click", function(){
+
       const slug = $(this).attr("id").replace("-background", "");
       $(`${App.els.strategyMapText} tspan`).empty();
       $(`.jurisdiction`).removeClass("active");
@@ -598,7 +616,12 @@
 
       App.state.wait = true; 
 
-      renderPolicyTable($(`.jurisdiction[data-jurisdiction="${slug}"]`).data("jurisdiction-raw"), App.state.currentPriority);
+      if(App.state.currentPriority == ""){
+        renderPolicyTable(slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()))
+      } else {
+        console.log(App.state.currentPriority);
+        renderPolicyTable($(`.jurisdiction[data-jurisdiction="${slug}"]`).data("jurisdiction-raw"), App.state.currentPriority);
+      }
 
       //scroll page to datatable
       $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
@@ -607,8 +630,6 @@
 
 
     $("#datatable").on("click", ".strategy-badge", function(){
-
-      console.log($(this).data())
       
       const jurClasses = $(this).data("strategy-jurisdictions");
 
@@ -685,7 +706,7 @@
     $video.attr("data-current-language", newLang);
     $video.data("current-language", newLang);
 
-    console.log($video.data("current-language"));
+    
 
     //change active button
     $(".language-drop-down button.dropdown-item").removeClass("active");
