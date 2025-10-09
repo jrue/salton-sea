@@ -111,6 +111,77 @@
     }).join(" ");
   };
 
+
+  /**
+   * Smoothly scroll the PARENT page so that the target element in the CHILD
+   * lines up nicely below a sticky header that shrinks from 160 -> 131.75.
+   *
+   * Usage (from inside the child):
+   *   scrollParentToId('datatable');                 // defaults
+   *   scrollParentToId('section-2', { extraOffset: 8 });  // tweak if needed
+   */
+  function scrollParentToId(
+    id,
+    {
+      headerLarge = 160,
+      headerSmall = 131.75,
+      shrinkAt = 1,        // when parent scrollTop > this, use headerSmall
+      extraOffset = 0,     // additional pixels to subtract if you want a gap
+      fallbackIframeTop = 192 // your observed constant, used only if pageInfo missing
+    } = {}
+  ) {
+    if (!window.parentIFrame) return; // iFrameResizer not ready yet
+
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // Ask the parent for current scroll + where this iframe sits in the parent
+    // Then compute an absolute Y in the parent coordinate space and scroll to it.
+    try {
+      window.parentIFrame.getPageInfo(function(info) {
+        // info.scrollTop: parent scroll position
+        // info.iframeTop: distance from parent's document top to top of iframe
+        const iframeTop = (info && typeof info.iframeTop === 'number')
+          ? info.iframeTop
+          : fallbackIframeTop;
+
+        const parentScrollTop = (info && typeof info.scrollTop === 'number')
+          ? info.scrollTop
+          : 0;
+
+        // Where is the element relative to the iframe's viewport?
+        const rect = el.getBoundingClientRect();
+
+        // Choose header size based on parent's current scrollTop
+        const header = parentScrollTop > shrinkAt ? headerSmall : headerLarge;
+
+        // Compute target absolute Y in the parent doc:
+        // parentScrollTop + iframeTop + elementTopInIframe - header - extraOffset
+        const targetY = Math.max(
+          0,
+          Math.round(parentScrollTop + iframeTop + rect.top - header - extraOffset)
+        );
+
+        // Smooth scroll the PARENT
+        window.parentIFrame.sendMessage({
+          action: "scrollToY",
+          y: targetY
+        });
+      });
+    } catch (e) {
+      // If getPageInfo isn't available (older versions), fall back to a
+      // best-effort relative move using the known iframe offset.
+      const rect = el.getBoundingClientRect();
+      const header = headerSmall; // assume "scrolled" state as a safer default
+      const targetY = Math.max(0, Math.round(fallbackIframeTop + rect.top - header - extraOffset));
+      window.parentIFrame.sendMessage({
+        action: "scrollToY",
+        y: targetY
+      });
+    }
+  }
+
+
   // Build the big index once
   const buildPriorityIndex = (rows) => d3.rollup(
     rows,
@@ -522,32 +593,6 @@
 
 
 
-    // Hover highlight for priorities
-    $(App.els.categoryInfo).on("pointerover", ".priorities", function () {
-
-      // $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
-      // const jurClasses = String($(this).data("jurisdictions") || "");
-
-      // if($(".priorities.active").length == 0){
-      //   if ($(App.els.categoryInfo).find('.terms.show').length == 0 && $(App.els.categoryInfo).find('.terms.collapsing').length == 0) {
-      //       $(`${App.els.ratioHud} .ratio-figure`).text(`${jurClasses.split(" ").filter(Boolean).length}/7`);
-      //   }
-      //   for (const cls of jurClasses.split(" ").filter(Boolean)) {
-      //     $(`${App.els.mapRoot} #${cls}-background`).addClass('is-drawn');
-      //   }
-      //   $(App.els.ratioHud).addClass("active");
-      // }
-      
-    });
-
-    $(App.els.categoryInfo).on("pointerout", ".priorities", function () {
-      //$(`${App.els.mapRoot} .map-background-element`).attr("stroke-opacity", 0);
-      // if ($(App.els.categoryInfo).find('.terms.show').length == 0 && $(App.els.categoryInfo).find('.terms.collapsing').length == 0) {
-      //     $(`${App.els.mapRoot} .map-background-element`).removeClass('is-drawn');
-      // }
-      
-    });
-
     // Jurisdiction click → table + map highlight
     $(App.els.categoryInfo).on("click", ".jurisdiction", function () {
       
@@ -566,6 +611,7 @@
 
       //scroll page to datatable
       $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      scrollParentToId("datatable");
       const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
     });
 
@@ -625,6 +671,7 @@
 
       //scroll page to datatable
       $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      scrollParentToId("datatable");
       const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
     });
 
@@ -664,6 +711,7 @@
 
       //scroll page to datatable
       $("html, body").stop().animate({scrollTop: $("#dashboard").offset().top - 140}, 300);
+      scrollParentToId("dashboard");
       const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
 
     })
