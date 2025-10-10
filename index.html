@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="uft-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thriving Salton Sea</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+
+</head>
+<body>
+
+<section role="main" id="home" style="min-height:800px" class="d-flex flex-column justify-content-center light-blue-bg position-relative">
+    <div class="row justify-content-center g-0 visually-hidden">
+        <div class="col-10 text-start hero-text">
+            <h1 class="display-1">The Thriving<br />Salton Sea<br />Communities</h1>
+            <p class="lead fs-2">A United Region Deserving of More</p>
+        </div>
+    </div>
+    <div class="text-center position-absolute bottom-0 z-3 start-50 translate-middle">
+        <p class="lh-1" style="color:#2A4464;">Scroll</p>
+        <i class="bi bi-chevron-double-down fs-2 lh-1" style="color:#2A4464;"></i>
+    </div>
+</section>
+
+
+<section id="dashboard" class="container-fluid pt-5 position-relative" style="background-color:#092635; min-height:800px;">
+  <div id="instructions"></div>
+  <div class="row justify-content-center">
+    <div class="col-sm-6 col-12">
+      <div class="row mt-3">
+        <div class="col-12">
+          <div id="pill-labels" class="row g-2"></div>
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div id="category-info" class="col-12 position-relative">
+          <img src="assets/images/arrow.png" width="200" height="auto" alt="arrow" style="margin-left:50%;margin-top:-50px;">
+          <h2>Instructions:</h2>
+          <p>Start by clicking on one of the alignments above. Then drill down further into some of the policy priorities to understand which communities have policies that promote those themes.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-12">
+      <svg id="salton_sea_map" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1000 1000" width="100%" height="100%">
+    <defs>
+        <style>
+        /* darkest - close to black */
+
+        /* darker */
+        .level-1{
+            background-color: #355679;
+            fill: #355679;
+        }
+
+        /* dark */
+        .level-2{
+            background-color: #5F7A92;
+            fill: #5F7A92;
+        }
+
+        /* medium */
+        .level-3{
+            background-color: #6d8eb1;
+            fill: #6d8eb1;
+        }
+
+        /* light */
+        .level-4{
+            background-color: #94A5B5;
+            fill: #94A5B5;
+        }
+
+        /* lighter */
+        .level-5{
+            background-color: #C6D0D9;
+            fill: #C6D0D9;
+        }
+
+        /* lighest - near white */
+        .level-6{
+            background-color: #F3F6FB;
+            fill: #F3F6FB;
+        }
+        .st0 {
+            fill: #355679;
+        }
+
+        .st1 {
+            fill: #b7c1cd;
+        }
+
+        .st2 {
+            fill: #171c21;
+            font-size: 20px;
+        }
+
+        .st2, .st3 {
+            font-family: 'Inter', 'Myriad Pro';
+        }
+
+        .st3 {
+            font-size: 22px;
+        }
+
+        .st3, .st4, .st5 {
+            fill: #fbfdfe;
+        }
+
+        .st6 {
+            fill: #6d8eb1;
+        }
+
+
+        .st5 {
+            font-family: 'Inter';
+            font-size: 36px;
+            font-weight: 400;
+        }
+        circle, 
+        #riverside-county-background, 
+        #imperial-county-background{
+            cursor: pointer;
+        }
+        text,tspan{
+            pointer-events: none;
+        }
+        </style>
+        <clipPath id="rounded">
+        <!-- A rect with rounded corners -->
+        <rect x="0" y="0" rx="50" width="1000" height="1000" rx="50" ry="50" />
+        </clipPath>
+    </defs>
+    <image href="assets/images/relief-map.jpg" clip-path="url(#rounded)" width="1000" height="1000" x="0" y="0" rx="30" preserveAspectRatio="xMidYMid slice" />
+    <rect id="cover" opacity="0.6" fill="#142a3f" x="0" y="0" rx="50" width="1000" height="1000" />
+    <!-- <path id="salton-sea-shape" class="st6" d="M735.6,614.48c-.88.54-2.39,5.09-2.41,6.27-.03,1.85,1.34,3.44,1.51,5.87.48,6.84-1.66,22.16-4.73,28.35-.55,1.1-7.1,10.71-7.64,11.1-2.37,1.72-7,.32-9.04,2.96-1.41,1.82-2.16,9.61-4.1,13.15-2.76,5.05-4.17,8.73-6.64,13.6s-9.46,17.84-14.34,19.43c-4.48,1.46-4.15-8.58-7.16-10.94-1.2,3.98,6.91,14.48.6,16.34-7.01,2.07-7.42-3.21-11.28-4.18-2.37-.59-3.89.67-5.64.44-.4-.05-5.59-2.16-6.46-2.55-1.96-.87-3.75-4.37-6.84-1.43-1.59,1.51.53,3.64-.09,5.83-.54,1.91-6.43,6.56-6.56,7.03-.25.94.69,2.25.54,3.48-.13.99-5.97,13.95-6.64,14.38-1.2.78-4,.46-4.85,1.89-1.39,2.34.5,5.48.21,7.05-.13.68-4.07,4.59-4.86,4.82-3.25.97-8.68-1.76-11.81-2.86l-1.24,4.39c-1.68,2.83-22.32-4.81-25.33-7.07-1.86-1.4-10.16-12.49-11.91-15.08-2.95-4.36-6.67-10.81-9.25-15.49-1.46-2.64-5.08-13.34-7.73-13.27-.98.03-1.9,1.33-3.07,1.52-5.22.84-7.2-6.07-10.03-8.67-11.18-10.32-15.91-18.94-25.11-30.38-2.84-3.53-3.22-8.31-9.04-8.28-2.38.01-3.47,1.27-5.28,1.53-6.2.9-15.27-.18-15.35-7.87-.03-2.45-.22-8.61-.05-10.47.15-1.58,1.64-3.01,1.53-3.65-.2-1.13-2.36-1.57-2.99-2.49-1.87-2.76-3.1-10.44-4.89-13.66-1.18-2.12-3.81-3.75-5.19-6.81s-1.29-6.54-2.28-8.97c-.72-1.76-4.21-5.13-5.02-6.98-2.23-5.1-1.69-14.33-3.39-18.36-1.96-4.65-9.25-12.2-11.79-18.96-4.1-10.93-4.5-30.58-8.81-39.19-1.29-2.57-7.15-8.68-9.16-11.84-1.14-1.79-2.32-5.81-3.06-6.69-.82-.96-3.07-1.14-4.5-2.25-1.69-1.31-2.58-4.07-4.45-5.29s-4.84-1.46-6.77-2.97c-2.12-1.66-2.84-5.01-5.06-6.19-7.57-4.01-12.87-.09-19.66-.52-6.58-.41-7.36-6.35-10.46-9.85-1.64-1.86-4.37-2.1-6.02-4.48-2.63-3.79-3.92-11.9-7.01-16.99-3.71-6.11-10.89-15.19-16.28-19.71-2.3-1.93-5.35-3.11-7.51-5.24-4.32-4.28-6.24-12.12-10.81-15.43s-11.66-4.84-16.29-7.7c-2.15-1.33-3.57-3.47-5.83-4.67-4.9-2.6-13.65-3.98-17.24-9-2.85-3.98-4.73-11.18-7.6-15.64-3.07-4.76-8.31-8.75-10.92-13.82-3.4-6.6-5.8-15.63-8.95-22.54-4.38-9.6-8.91-19.8-13.49-29.25-1.26-2.6-5.17-7.06-5.72-9.28-.58-2.35.3-5.01-.34-7.16-.47-1.59-2.92-2.42-3.43-4.06-1.34-4.29-.41-11.47-2.22-15.77-.28-.66-8.58-9.86-9.54-10.7-3.98-3.49-15.36-7.28-17.96-12.04-.78-1.43-3.12-12.52-3.34-14.65-.42-4.01.07-8.2,0-12.22,5.15-.74,9.93-2.92,14.42-5.44,1.23-.69,2.12-2.41,3.27-2.73,1.49-.42,3.38.26,4.72-.52,1.65-.96,2.86-5.69,3.88-7.37,1.59-2.61,3.76-4.82,5.24-7.51,3.82-6.94,1.82-13.83,10.76-14.74,14.12-1.43,24.16,4.45,40.26-.22,11.85-3.43,21.27-5.43,33.94-2.2l19.13-1.04c1.56.47,5.8,4.98,7.11,6.44,14.77,16.48,27.01,35.23,43.83,49.89,9.48,8.26,20.4,13.22,28.88,22.86,5.4,6.14,9.11,12.49,15.76,17.99,7.47,6.19,15.82,9.65,24.4,13.84l.7,1.56c-2.15,21.53,7.55,41.15,23.94,54.77,7,5.82,19.85,14.14,25.54,20.95,2.32,2.78,5.22,11.46,7.35,15.15,11.28,19.55,35.13,33.29,57.48,35.49,3.57.35,7.73-.47,11.19.06s7.63,3.95,11.36,4.39c5.5.66,10.78-2.32,16.01-3.35,19.17-3.77,35.96-1.48,52.44,9.09,2.38,1.53,4.86,6.06,6.09,6.72.99.53,8.21.22,10.5.68,13.72,2.71,20.8,18.36,27.84,29.15,12.86,19.75,22.29,40.32,27.98,63.51,2.44,9.96,10.18,45.66,6.2,53.46-.74,1.46-5.32,4.37-6.91,6.59-5.16,7.26-2.33,10.59-11.87,15.89-1.02.57-2.54.27-3.34.77Z"/> -->
+    <line id="county-separator-line" x1="30" y1="350" x2="970" y2="350" stroke="white" stroke-width="2" stroke-linecap="square" stroke-dasharray="5 5" />
+    <rect x="20" y="345" width="10" height="10" stroke="white" fill="none" stroke-width="4"></rect>
+    <rect x="970" y="345" width="10" height="10" stroke="white" fill="none" stroke-width="4"></rect>
+    <circle id="coachella-background"
+            class="level-0 map-background-element"
+            cx="125" cy="150" r="75"
+            pathLength="100" />
+    <circle id="brawley-background"
+            class="level-0 map-background-element"
+            cx="834" cy="834" r="75"
+            pathLength="100" />
+    <circle id="calipatria-background"
+            class="level-0 map-background-element"
+            cx="775" cy="725" r="75"
+            pathLength="100" />
+    <circle id="el-centro-background"
+            class="level-0 map-background-element"
+            cx="715" cy="925" r="75"
+            pathLength="100" />
+    <circle id="westmorland-background"
+            class="level-0 map-background-element"
+            cx="600" cy="868" r="75"
+            pathLength="100" />
+    <rect id="riverside-county-background"
+            class="level-0 map-background-element"
+            x="440" y="210" rx="50"
+            width="430" height="90"
+            pathLength="100" />
+    <rect id="imperial-county-background"
+            class="level-0 map-background-element"
+            x="580" y="395" rx="50"
+            width="390" height="90"
+            pathLength="100" />
+    <text id="strategy-map-text" class="st3" text-anchor="start" dominant-baseline="auto">
+        <tspan x="230" y="75"></tspan> 
+        <tspan x="230" dy="35"></tspan>
+        <tspan x="230" dy="35"></tspan>
+    </text>
+    <text class="st5" text-anchor="middle" dominant-baseline="middle" x="658" y="260">Riverside County</text>
+    <text class="st5" text-anchor="middle" dominant-baseline="middle" x="771" y="443">Imperial Valley</text>
+    <text class="st3" text-anchor="middle" dominant-baseline="middle" x="125" y="155">Coachella</text>
+    <text class="st3" text-anchor="middle" dominant-baseline="middle" x="715" y="930">El Centro</text>
+    <text class="st3" text-anchor="middle" dominant-baseline="middle" x="600" y="873">Westmorland</text>
+    <text class="st3" text-anchor="middle" dominant-baseline="middle" x="834" y="839">Brawley</text>
+    <text class="st3" text-anchor="middle" dominant-baseline="middle" x="775" y="730">Calipatria</text>
+    <text class="st3" text-anchor="middle" dominant-baseline="middle" x="450" y="554">Salton Sea</text>
+    <text id="alignment-value-ratio" x="25" y="900" text-anchor="start" dominant-baseline="baseline"><tspan class="ratio-figure">7/7</tspan><tspan x="25" dy="60" style="font: 400 25px/1rem Inter, sans-serif;">communities align with this </tspan><tspan id="priority-word" style="font: 400 25px/1rem Inter, sans-serif;">priority</tspan></text>
+    
+</svg>
+<script>
+/**
+ * @param {string} new_value
+ */
+function updateAlignmentNumbers(new_value){
+    $("alignment-value-map").find("tspan").text(new_value);
+}
+
+
+
+</script>
+    </div>
+  </div>
+</section>
+
+<section id="datatable" class="container-fluid pt-5" style="background-color:#092635;">
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <!-- Table container -->
+      <div class="table-responsive mt-3">
+        <h3 id="data-table-header"></h3>
+        <table id="policy-table" class="table align-middle">
+          <thead>
+            <tr>
+              <th>Jurisdiction</th>
+              <th>Policy Identifier</th>
+              <th>Policy Category</th>
+              <th>Policy Description</th>
+              <th class="text-start">Strategy List</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="video" class="py-5" style="background-color:#CFDFEB; color:#2F4D71;">
+
+  <div class="container-fluid d-flex flex-column justify-content-center align-items-center">
+
+    <div class="row justify-content-center my-4">
+      <div class="col-12">
+        <video controls preload="metadata" width="100%" height="auto" poster="assets/images/poster.jpg" data-current-language="english">
+          <source src="assets/images/salton-sea-opener-english.mp4" type='video/mp4; codecs="avc1.640028, mp4a.40.2"'>
+          <track
+            label="English"
+            kind="subtitles"
+            srclang="en"
+            src="assets/images/salton-sea-opener-english.vtt" />
+          <track
+            label="Español"
+            kind="subtitles"
+            srclang="es"
+            src="assets/images/salton-sea-opener-spanish.vtt" />
+        </video>
+        <div class="btn-group float-end" role="group">
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-translate"></i> Language
+            </button>
+            <ul class="language-drop-down dropdown-menu dropdown-menu-dark dropdown-menu-end">
+              <li><button class="dropdown-item active" data-language="english" type="button">English</button></li>
+              <li><button class="dropdown-item" data-language="spanish" type="button">Español</button></li>
+            </ul>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-badge-cc"></i> Captions
+            </button>
+            <ul class="caption-drop-down dropdown-menu dropdown-menu-dark dropdown-menu-end">
+              <li><button class="dropdown-item" type="button">English</button></li>
+              <li><button class="dropdown-item" type="button">Español</button></li>
+              <li><button class="dropdown-item active" type="button">Turn off</button></li>
+            </ul>
+          </div>
+        </div>
+     </div>
+    </div>
+
+  </div>
+
+</section>
+
+<section id="introduction" style="background-color:#CFDFEB; color:#2F4D71;">
+
+  <div class="container-fluid">
+    <div class="row justify-content-center pt-5">
+      <div class="col-12 col-md-10 col-xl-8">
+        <h4 class="inter-font" style="font-weight:400;"><strong>The Eastern Coachella Valley</strong>—comprised largely of unincorporated communities—and the Imperial Valley together form the broader <strong>Salton Sea region.</strong></h4>
+      </div>
+    </div>
+    <div class="row justify-content-center pt-3">
+      <div class="col-12 order-1 order-sm-1 col-sm-6 col-md-5 col-xl-4">
+        <p>These areas are home to predominantly Latino immigrant communities, many of whom work as low-wage farm laborers or in service jobs that support a relatively prosperous surrounding economy. Despite the richness of culture and contribution, the region faces shared challenges: environmental degradation (from the drying Salton Sea, extreme heat, and polluted air and water), limited public infrastructure and amenities, economic inequality, climate vulnerability, and pressing public health concerns.</p>
+      </div>
+      <div class="col-12 order-2 order-sm-2 col-sm-6 col-md-5 col-xl-4">
+        <figure class="figure">
+           <img src="assets/images/02-tractor.jpg" alt="A tractor plowing a field" class="img-fluid">
+        </figure>
+      </div>
+    </div>
+    <div class="row justify-content-center pt-3">
+      <div class="col-12 order-4 order-sm-3 col-sm-6 col-md-5 col-xl-4">
+        <figure class="figure">
+          <img src="assets/images/03-organizing.jpg" alt="A group of people organizing with signs" class="img-fluid">
+        </figure>
+      </div>
+      <div class="col-12 order-3 order-sm-4 col-sm-6 col-md-5 col-xl-4">
+        <p>Yet, our region is also bound by a collective vision: one of shared economic opportunity, environmental resilience, and improved social well-being. This vision draws from the principles of Solidarity Economics, which emphasize mutuality, fairness, and inclusion as pathways to broad-based prosperity. To realize this future, we must begin by building a strong, unified regional identity—one that uplifts all communities and ensures that no one is left behind.</p>
+      </div>
+    </div>
+    <div class="row justify-content-center pt-3">
+      <div id="regional-engagement-at-the-salton-sea" class="col-12 col-sm-10 col-xl-8">
+        <h2 class="display-6 fw-lighter pb-3 pt-5">Regional Engagement at the Salton Sea</h2>
+        <button type="button" data-bs-toggle="collapse" data-bs-target="#rationale" class="btn border mb-3 bg-transparent border-secondary rounded-0 text-body-secondary btn-lg text-start" style="color:#676B82!important;">Rationale <i class="bi bi-arrow-down float-end"></i></button>
+        <div id="rationale" class="collapse">
+          <p>The driving force behind this regional engagement has been to address the historical underinvestment in Salton Sea communities. We believe that for smaller rural communities, developing a regional identity and capacity for collaboration is key to increasing competitiveness and securing resources.</p>
+        </div>
+        <button type="button" data-bs-toggle="collapse" data-bs-target="#activities" class="btn border mb-3 bg-transparent border-secondary rounded-0 text-body-secondary btn-lg text-start" style="color:#676B82!important;">Activities to date <i class="bi bi-arrow-down float-end"></i></button>
+        <div id="activities" class="collapse">
+          <p>Since 2020, roundtable meetings in the Salton Sea region have fostered collaboration among local, regional, and state governments, as well as NGOs and academia. These convenings took place in March 2021, April 2022, August 2022, November 2023, February 2025, April 2025, and June 2025. They are planned to continue as we see the importance of dialogue, coordination and ultimately collaboration in order to advance the Salton Sea region into a prosperous future for all.</p>
+          <p>These conversations have informed the creation of the Our Salton Sea report, which provides a more integrated vision for the remediation of the Salton Sea communities, and the Land Use Alignment Initiative, an analysis of general plan elements across jurisdictions surrounding the Salton Sea that identifies areas of mutual priority. </p>
+        </div>
+        <button type="button" data-bs-toggle="collapse" data-bs-target="#stakeholders" class="btn border mb-3 bg-transparent border-secondary rounded-0 text-body-secondary btn-lg text-start" style="color:#676B82!important;">Stakeholders <i class="bi bi-arrow-down float-end"></i></button>
+        <div id="stakeholders" class="collapse">
+          <p>Alianza Coachella Valley has engaged with a diverse range of stakeholders, including:</p>
+          <ul>
+
+            <li><strong>Tribes</strong> and <strong>local agencies</strong> such as the Imperial Irrigation District and the Coachella Valley Association of Governments.</li>
+            <li><strong>State agencies</strong>, including the Strategic Growth Council and the California Natural Resources Agency.</li>
+            <li><strong>The Governor&lsquo;s Office</strong>, through senior advisors and external affairs teams.</li>
+            <li><strong>Local governments</strong>, such as the Salton Sea Authority and Imperial and Riverside Counties.</li>
+            <li><strong>Foundations</strong>, including the California Endowment.</li>
+            <li><strong>Nonprofits</strong>, from Audubon California to Líderes Campesinas.</li>
+            <li><strong>Impacted communities</strong>, living throughout the Salton Sea region.</li>
+          </ul>
+        </div>
+        <button type="button" data-bs-toggle="collapse" data-bs-target="#strategic-path-forward" class="btn border mb-3 bg-transparent border-secondary rounded-0 text-body-secondary btn-lg text-start" style="color:#676B82!important;">Strategic Path Forward<i class="bi bi-arrow-down float-end"></i></button>
+        <div id="strategic-path-forward" class="collapse">
+          <ol>
+          <li><strong>Identify Shared Priorities</strong> &ndash; Align regional efforts under common project themes: 1. Addressing infrastructure to uplift the region 2. Advancing trails &amp; other active transportation opportunities 3. Enhancing Economic Development Opportunities</li>
+          <ol>
+          <li>Through a series of conversations, we have identified regional shared priorities as being:</li>
+          <ol>
+          <li>A network of similar Community Resiliency Centers that follows a hub and spoke model to address needs in each area of the region</li>
+          <li>A network of trails to improve community access to critical services, programs, and resources <br /><br /></li>
+          </ol>
+          </ol>
+          <li><strong>Develop a Project Portfolio</strong> &ndash; Select and organize projects that align with these priorities.</li>
+          <ol>
+          <li>Projects that are already underway are:</li>
+          <ol>
+          <li>City of Coachella Climate Resiliency Center</li>
+          <li>Alianza Coachella Valley Community Resilience Campus</li>
+          <li>County of Riverside Climate Resiliency Center</li>
+          <li>Niland&rsquo;s Lithium Valley Visitor&rsquo;s Center Complex with Community Resiliency Center</li>
+          <li>Calipatria Services Center</li>
+          <li>CV Link under construction connecting Palm Springs to Coachella</li>
+          <li>CV Link Mecca-North Shore Extension</li>
+          <li>Alianza Shores to Sea Trail</li>
+          <li>Audubon Lizard Trail</li>
+          <li>Imperial Valley Lithium Valley natural corridor trails<br /><br /></li>
+          </ol>
+          </ol>
+          <li><strong>Advance Collaborative Action</strong> &ndash; Leverage collective resources and take strategic steps to secure public and philanthropic investments.</li>
+          <ol>
+          <li>After roundtable and interim discussions, the region needs:</li>
+          <ol>
+          <li>Coordinated action to go after available funding through the California climate bond and other financial sources</li>
+          <li>Studies and data needed to complete each phase of implementation</li>
+          </ol>
+          </ol>
+          </ol>
+        </div>
+        <button type="button" data-bs-toggle="collapse" data-bs-target="#combating-false-narrative" class="btn border mb-3 bg-transparent border-secondary rounded-0 text-body-secondary btn-lg text-start" style="color:#676B82!important;">Combating a False Narrative<i class="bi bi-arrow-down float-end"></i></button>
+        <div id="combating-false-narrative" class="collapse">
+          <p>To counter a persistent false narrative that our counties and jurisdictions are divided, Alianza Coachella Valley and its partners launched the Land Use Alignment Initiative. Through community-grounded conversations and research, we found that neighboring jurisdictions across both counties actually share far more in common than is often acknowledged by state and federal agencies.</p>
+          <p>The initiative confirmed what local communities have long known: we all want the same things for our region&ndash;economic opportunity, environmental health, and a better quality of life. The real challenge lies not in our differences, but in how we communicate our shared goals among ourselves, with our residents, and to outside stakeholders.</p>
+        </div>
+        <div class="mb-5">&nbsp;</div>
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+</section>
+
+<p class="text-center lh-1"><small class="font-small">Icons <i class="bi bi-cc-circle"></i><i class="bi bi-person-circle"></i> CC BY 3.0 The Noun Project. Didik Darmanto, Larea, Omah Icon, Khulqi Rosyid. Project Design by Richard Koci Hernandez and Jeremy Sanchez Rue.</small></p>
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/jquery-3.7.1.min.js"></script>
+<script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/datatables.min.js"></script>
+<script src="assets/js/iframeResizer.contentWindow.min.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  const App = {
+    state: {
+      allData: [],              //csv imported using d3
+      priorityIndex: null,      //d3.rollup of specific columns used as aggregate function
+      uniquePriorities: [],     //to create top-level pill buttons, these are unique top-level priorities in dataset
+      priorityShortcodes: [],   //since dataset has longer phrases for top-level buttons, this uses shorter names
+      priorityDescriptions: [], //longer description to display after user clicks top-level button
+      currentAlignment: "",     //current top-level alignment
+      currentPriority: "",      //keep track of which priority we're viewing to filter datatable when user clicks a city
+      dt: null,                  //datatable reference
+      wait: false               // wait for scroll animation to complete
+    },
+    els: {
+      pillLabels:    "#pill-labels",
+      categoryInfo:  "#category-info",
+      mapRoot:       "#salton_sea_map",
+      ratioHud:      "#alignment-value-ratio",
+      dataTable:     "#policy-table",
+      dataHeader:    "#data-table-header",
+      strategyMapText: "#strategy-map-text",
+      infoButton:    '<i id="reset-info" class="bi bi-skip-backward position-absolute top-0 end-0 z-1 fs-4" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Reset view."></i>'
+    },
+    colors: {
+      airQuality: "#5192E2",
+      greenSpaces: "#469065",
+      agriculture: "#F88C8C",
+      infrastructure: "#FFD89D",
+      priorityDefault: "#526977",  //--priority-default-color
+      mapCircleColor: "#142a3f",
+      mapSelectedColor: "#142a3f",
+      pillActiveTextColor: "#000000",
+      heroText: "#516A88",
+      lightBackground: "#CFDFEB",
+      darkBlueBackground: "#5E7B9A"
+    }
+  };
+
+  //set the CSS variable to the default color
+  $(":root").css("--priority-default-color", App.colors.priorityDefault);
+  $(":root").css("--pill-active-text-color", App.colors.pillActiveTextColor);
+  $(":root").css("--hero-text", App.colors.heroText);
+  $(":root").css("--light-background", App.colors.lightBackground);
+  $(":root").css("--dark-background", App.colors.darkBlueBackground);
+  $(":root").css("--alignment-infrastructure-bg-color", App.colors.infrastructure);
+  $(":root").css("--alignment-agriculture-bg-color", App.colors.agriculture);
+  $(":root").css("--alignment-green-spaces-bg-color", App.colors.greenSpaces);
+  $(":root").css("--alignment-air-quality-bg-color", App.colors.airQuality);
+
+  // -----------------------------
+  // Utilities
+  // -----------------------------
+  
+  // turn "Salton Sea" into "salton-sea"
+  const slugify = (s) => String(s).trim().toLowerCase().split(/\s+/).join("-"); //use jurisdictions as class names sometimes,
+  
+  // turn "Salton Sea" into "saltonSea"
+  const camelfy = s => String(s).trim().toLowerCase().split(/\s+/).map((w, i) => i === 0 ? w : w[0].toUpperCase() + w.slice(1)).join("");
+  
+  // turn ["Salton Sea", "Coachella", "Brawley"] to "salton-sea coachella brawley"
+  const classListFromStrings = (arr) => arr.map(j => slugify(j)).join(" ");
+  
+  // turn " Salton Sea " to "salton sea"
+  const norm = s => String(s).trim().toLowerCase(); //normalizer
+
+  //turn arr to comma-separated string with "and." Example: ["Salton Sea", "Coachella", "Brawley"] to "Salton Sea, Coachella, and Brawley"
+  const joinWithAnd = (arr = []) =>
+    !Array.isArray(arr) ? "" :
+    arr.length === 0 ? "" :
+    arr.length === 1 ? String(arr[0]) :
+    arr.length === 2 ? `${arr[0]} and ${arr[1]}` :
+    `${arr.slice(0, -1).join(", ")}, and ${arr.at(-1)}`;
+
+  //hex to RGB so to detect whether text will show on light backgrounds
+  const hexToRgb = hex => {
+    let h = String(hex).replace('#', '').trim();
+    if (h.length === 3) h = h.split('').map(ch => ch + ch).join('');
+    const num = parseInt(h, 16);
+    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+  };
+
+  // Returns '#000000' or '#ffffff' for best contrast with a hex background.
+  // Accepts 3- or 6-digit hex, with or without '#'.
+  // example pickHighContrastTextColor('#ffffff'); returns "#000000"
+  const pickHighContrastTextColor = (hex, light = '#ffffff', dark = '#000000') => {
+    const { r, g, b } = hexToRgb(hex);
+    const toLin = c => {
+      c /= 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    const L = 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
+    const contrastWhite = 1.05 / (L + 0.05);
+    const contrastBlack = (L + 0.05) / 0.05;
+    return contrastWhite > contrastBlack ? light : dark;
+  };
+
+
+  const firstOfSet = (setLike) =>
+    setLike && typeof setLike.values === "function"
+      ? setLike.values().next().value
+      : null;
+
+  const toTitleCase = (str) => {
+    const small = /^(a|an|and|as|at|but|by|for|in|nor|of|on|or|per|the|to|vs?|via)$/i;
+    return String(str).split(/\s+/).map((w, i, all) => {
+      if (small.test(w) && i !== 0 && i !== all.length - 1) return w.toLowerCase();
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }).join(" ");
+  };
+
+
+ let scrollLock = false;
+
+  /**
+   * Compute targetY and (optionally) request the parent to scroll there.
+   * Returns a Promise that resolves to an object with diagnostics.
+   *
+   * Usage examples in console:
+   *   await scrollParentToId('datatable', { dryRun: true })
+   *   await scrollParentToId('datatable')  // performs the scroll
+   */
+  function scrollParentToId(id, {
+    headerLarge = 160,
+    headerSmall = 131.75,
+    shrinkAt = 1,
+    extraOffset = 0
+  } = {}) {
+    if (!('parentIframe' in window)) { console.warn('parentIframe missing'); return; }
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // one-shot: get parent props, then immediately disable updates
+    const disable = parentIframe.getParentProps((props) => {
+      disable && disable(); // unsubscribe immediately
+
+      // props.iframe is getBoundingClientRect() of the IFAME in the parent
+      // props.viewport.pageTop is parent scrollTop, props.viewport.offsetTop is visual viewport offset
+      const parentScrollTop = props.viewport.pageTop || 0;
+      const iframeTop       = props.iframe.top || 0;        // distance from parent doc top to iframe top
+      const rectTop         = el.getBoundingClientRect().top;
+      const header          = parentScrollTop > shrinkAt ? headerSmall : headerLarge;
+
+      const targetY = Math.max(0, Math.round(parentScrollTop + iframeTop + rectTop - header - extraOffset));
+
+      // send a message to parent to do the smooth tween
+      window.top.postMessage({ action: 'scrollToY', y: targetY }, '*');
+    });
+  }
+
+
+  // Build the big index once
+  const buildPriorityIndex = (rows) => d3.rollup(
+    rows,
+    groupRows => ({
+      jurisdictions:       new Set(groupRows.map(d => d["Jurisdiction"])),
+      fullAlignment:       new Set(groupRows.map(d => d["Priority Alignment"])),
+      alignmentDescription:new Set(groupRows.map(d => d["Priority Alignment Description"])),
+      sharedPriorities:    new Set(groupRows.map(d => d["Shared Priorities"])),
+      byShared: d3.rollup(
+        groupRows,
+        vv => {
+          const jur   = new Set(vv.map(d => d["Jurisdiction"]).filter(Boolean));
+          const terms = new Set(vv.map(d => d["General Terms of Commonalities (Specific)"]).filter(Boolean));
+          const countsByJur = d3.rollup(
+            vv,
+            vvv => vvv.length, // change to unique policy count if desired
+            d => d["Jurisdiction"]
+          );
+          return { jurisdictions: jur, generalTerms: terms, jurisdictionCount: jur.size, countsByJur };
+        },
+        d => d["Shared Priorities"]
+      )
+    }),
+    d => d["Priority Alignment Shortcode"]
+  );
+
+  /**
+   * Build once: strategy token → array of source rows
+   * Returns a function(strategy, [filter]) -> unique jurisdictions[]
+   *
+   * filter is an optional object like:
+   *   { "Priority Alignment Shortcode": "Green Spaces" }
+   *   { "Jurisdiction": ["Brawley","Coachella"] }
+   *   { "Priority Alignment": /Green/i }
+   *   { "Priority Alignment": v => v && v.startsWith("Green") }
+   */
+  const buildJurisdictionsFromStrategy = (rows) => {
+    const byStrategy = new Map(); // normalized strategy -> rows[]
+
+    for (const r of rows) {
+      const list = r?.["Strategy List"];
+      if (!list) continue;
+      for (const t of list.split(",").map(s => norm(s)).filter(Boolean)) {
+        if (!byStrategy.has(t)) byStrategy.set(t, []);
+        byStrategy.get(t).push(r);
+      }
+    }
+
+    // flexible matcher for filter values
+    const matches = (cell, rule) => {
+      if (rule == null) return true;
+      if (typeof rule === 'function') return !!rule(cell);
+      if (rule instanceof RegExp) return rule.test(String(cell ?? ''));
+      if (Array.isArray(rule))   return rule.includes(cell);
+      return cell === rule; // strict equality by default
+    };
+
+    // The callable
+    const getJurisdictionsFromStrategy = (strategy, filter = null) => {
+      if (!strategy) return [];
+      const rowsForStrategy = byStrategy.get(norm(strategy)) || [];
+      let filtered = rowsForStrategy;
+
+      if (filter && typeof filter === 'object') {
+        filtered = rowsForStrategy.filter(row =>
+          Object.entries(filter).every(([col, rule]) => matches(row?.[col], rule))
+        );
+      }
+
+      // unique jurisdictions, sorted
+      const set = new Set(filtered.map(r => r?.["Jurisdiction"]).filter(Boolean));
+      return Array.from(set).sort(d3.ascending);
+    };
+
+    // Optional helpers
+    getJurisdictionsFromStrategy.keys = () => Array.from(byStrategy.keys()).sort();
+    getJurisdictionsFromStrategy.size = byStrategy.size;
+
+    return getJurisdictionsFromStrategy;
+  };
+
+
+  // -----------------------------
+  // UI: Top pill buttons
+  // -----------------------------
+  function updatePills(labels, labelDescriptions) {
+    const $root = $(App.els.pillLabels).empty();
+
+    for (let i = 0; i < labels.length; i++) {
+      const label = labels[i];
+      const desc  = labelDescriptions?.[i] || "";
+      const slug  = slugify(label);
+
+      const $col = $('<div class="col-6 col-md-6 col-lg-3 d-grid"></div>');
+      
+      //customize the individual svg icons by editing the .svg files in the images folder. Keep names based on slugs.
+      $col.append(`
+        <div class="pill-labels mb-3 d-block position-relative"
+          style="background-image:url('assets/images/${slug}.svg');">
+        </div>
+      `);
+      $col.append(`
+        <button
+          class="alignment-buttons ${slug} pills btn badge lh-sm rounded-3 font-small text-bg-light fw-normal text-center py-2 d-block text-uppercase"
+          data-description="${desc}"
+          data-eq="eq-${i}">
+          ${label}
+        </button>
+      `);
+
+      $root.append($col);
+    }
+  }
+
+  // -----------------------------
+  // UI: Render detail for a shortcode click
+  // -----------------------------
+  function renderPriorityDetail(shortcode) {
+    const node = App.state.priorityIndex.get(shortcode);
+    if (!node) return;
+
+    const title = firstOfSet(node.fullAlignment) || "";
+    const para  = firstOfSet(node.alignmentDescription) || "";
+
+    const sharedPriorities = Array.from(node.sharedPriorities || []);
+    const $info = $(App.els.categoryInfo).empty(); //remove instructions
+
+    $info.append(App.els.infoButton); //add info icon
+
+    $info.append(`<h2>${title}</h2><p>${para}</p>`);
+
+    // For each shared priority, render its button & collapse with jurisdictions
+    for (const sp of sharedPriorities) {
+      const entry = node.byShared.get(sp);
+      if (!entry) continue;
+
+      const jurisdictions = Array.from(entry.jurisdictions).sort();
+      const jurClassList = classListFromStrings(jurisdictions);
+      const generalTerm  = firstOfSet(entry.generalTerms) || "";
+      const spId = slugify(sp);
+
+      // Trigger button
+      $info.append(`
+        <button
+          class="priorities pills btn rounded-3 text-bg-light font-smaller fw-normal text-start mb-2 d-block"
+          data-jurisdictions="${jurClassList}"
+          data-bs-title="${generalTerm}"
+          data-bs-toggle="collapse"
+          data-bs-target="#${spId}">
+          ${sp}
+          <span class="badge rounded-pill text-bg-secondary">${entry.jurisdictionCount}/7</span>
+        </button>
+      `);
+
+      // Collapse panel + jurisdiction buttons
+      const $box = $(`<div id="${spId}" class="terms collapse ms-4"
+                        data-jurisdictions="${jurClassList}"
+                        data-priority="${sp}">
+                        <p class="font-smaller mb-2">
+                          ${generalTerm}. Click on a jurisdiction below to see related policies that align with this category.
+                        </p>
+                      </div>`);
+
+      for (const jur of jurisdictions) {
+        const count = entry.countsByJur.get(jur) || 0;
+        $box.append(`
+          <button
+            class="jurisdiction pills btn lh-sm rounded-3 text-bg-light font-smaller fw-normal text-start py-1 mb-2 d-block"
+            data-jurisdiction="${slugify(jur)}"
+            data-jurisdiction-raw="${jur}">
+            ${jur}
+            <span class="badge rounded-pill text-bg-secondary">${count} ${count == 1 ? 'policy' : 'policies'}</span>
+          </button>
+        `);
+      }
+      $info.append($box);
+    }
+  }
+
+  // -----------------------------
+  // Table: DataTables setup & refresh
+  // -----------------------------
+  function initDataTable() {
+    App.state.dt = $(App.els.dataTable).DataTable({
+      pagingType: "simple_numbers",
+      renderer: "bootstrap",
+      lengthChange: false,
+      paging: true,
+      searching: true,
+      info: true,
+      autoWidth: false,
+      responsive: true,
+      dom: `t
+          <"row mt-3 justify-content-center"
+            <"col-12 col-lg-4 dt-pager"p>
+            <"col-12 col-lg-4 dt-button text-center"B>
+            <"col-6  col-lg-4 dt-search"f>
+          >
+          <"row mt-2"
+            <"col-12 dt-info text-center"i>
+          >
+        `,
+      buttons: [
+        {
+          text: 'Show Policies for All Communities',
+          className: 'btn btn-outline btn-sm bg-transparent text-wrap font-smaller',
+          action: function () {
+            renderPolicyTable(); // show all rows
+          }
+        }
+      ],
+      language: {
+        paginate: {
+          previous: '<i class="bi bi-chevron-left"></i>',
+          next: '<i class="bi bi-chevron-right"></i>'
+        }
+      },
+      columns: [
+        { data: "Jurisdiction", defaultContent: "" },
+        { data: "Policy Identifier", defaultContent: "" },
+        { data: "Policy Category", defaultContent: "" },
+        { data: "Policy Description", defaultContent: "", className: "text-wrap" },
+        {
+          data: "Strategy List",
+          defaultContent: "",
+          render: (data) => {
+            if (!data) return "";
+            return String(data)
+              .split(",")
+              .map(function(item){ 
+                
+                const jurisdictionsForThisBadge = App.state.currentPriority ? App.state.getJurisdictionsFromStrategy(item.trim(), {"Shared Priorities": App.state.currentPriority}) : App.state.getJurisdictionsFromStrategy(item.trim());
+                const haveOrHas = jurisdictionsForThisBadge.length > 1 ? 'have' : 'has';
+                const numOfJurisdictionsForThisBadge = `${String(jurisdictionsForThisBadge.length)}/7 communities`;
+
+                if(jurisdictionsForThisBadge.length === 0){
+                  return `<span class="badge strategy-badge text-wrap text-bg-secondary me-1 mb-1 lh-sm text-start">${toTitleCase(item.trim())}</span>`;
+                } else {
+                
+                  return `<span class="badge strategy-badge strategy-badge-clickable text-wrap text-bg-secondary me-1 mb-1 lh-sm text-start" 
+                            data-bs-toggle="tooltip"
+                            data-bs-title="${joinWithAnd(jurisdictionsForThisBadge)} ${haveOrHas} this strategy.<br/><br/> ${numOfJurisdictionsForThisBadge}"
+                            data-strategy-jurisdictions="${jurisdictionsForThisBadge.join(", ")}">
+                            ${toTitleCase(item.trim())}
+                          </span>`;
+                }
+              })
+              .join(" ");
+          }
+        }
+      ],
+      columnDefs: [
+        { targets: 0, responsivePriority: 3 },
+        { targets: 1, responsivePriority: 1 },
+        { targets: 2, responsivePriority: 3 },
+        { targets: 3, responsivePriority: 1 },
+        { targets: 4, responsivePriority: 1 }
+      ]
+    });
+  } 
+
+  /**
+   * Show Data table
+   * 
+   * @param {string} jurisdictionRaw - (Optional) The name of the jurisdiction (i.e. calipatria)
+   * @param {string} sharedPriority - (Optional) The name of the shared priority
+   */
+  function renderPolicyTable(jurisdictionRaw = null, sharedPriority = null) {
+
+    const rows = App.state.allData.filter(d => {
+      let match = true;
+
+      if (jurisdictionRaw !== null && jurisdictionRaw !== "") {
+        match = match && d["Jurisdiction"] === jurisdictionRaw;
+      }
+
+      if (sharedPriority !== null && sharedPriority !== "") {
+        match = match && d["Shared Priorities"] === sharedPriority;
+      }
+
+      return match;
+    });
+    // header text
+    const hdr = jurisdictionRaw && sharedPriority
+      ? `Showing ${App.state.currentAlignment} policies for <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">&nbsp;${jurisdictionRaw}&nbsp;</span> related to <span style="background-color:${App.colors.mapCircleColor};color:${pickHighContrastTextColor(App.colors.mapCircleColor)}">&nbsp;${sharedPriority}&nbsp;</span>`
+      : jurisdictionRaw
+        ? `Showing policies for ${jurisdictionRaw}`
+        : sharedPriority
+          ? `Showing policies related to ${sharedPriority}`
+          : `Showing all policies`;
+
+    $(App.els.dataHeader).html(hdr);
+
+    App.state.dt.clear().rows.add(rows).draw();
+  }
+
+  // -----------------------------
+  // Event wiring 
+  // -----------------------------
+  function wireEvents($) {
+
+    //trigger click when clicking on icons as well
+    $(document).on("click", ".pill-labels", function(){
+      $(this).siblings(".alignment-buttons").trigger("click");
+    })
+
+    // Top-level category clicks 
+    $(document).on("click", ".alignment-buttons", function () {
+      const shortcode = $(this).text().trim(); // button text is the shortcode, e.g. "green spaces" or "air quality"
+      App.state.currentAlignment = shortcode;   //save shortcode in currentAlignment
+      App.state.currentPriority = "";           // reset until a terms panel opens
+      renderPriorityDetail(shortcode);          // shows the categories 
+      const pillBackgroundForThisPriority = App.colors[camelfy($(this).text())];
+      App.colors.mapCircleColor = pillBackgroundForThisPriority;
+      $(":root").css("--priority-active-color", pillBackgroundForThisPriority);
+      $(":root").css("--priority-default-color", pillBackgroundForThisPriority);
+      $(":root").css("--pill-active-text-color", pickHighContrastTextColor(pillBackgroundForThisPriority));
+      $(".alignment-buttons").removeClass("active");
+      $(`${App.els.strategyMapText} tspan`).empty();
+      $(this).addClass("active");
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(App.els.ratioHud).removeClass("active");
+    });
+
+    //reset everything
+    $(document).on("click", "#reset-info", function(){
+
+      const tooltip = bootstrap.Tooltip.getInstance('#reset-info')
+      tooltip.hide()
+
+
+      $(App.els.categoryInfo).empty();
+      $(App.els.dataHeader).empty();
+
+      App.state.currentPriority = "";
+
+      App.colors.mapCircleColor = App.colors.priorityDefault
+      $(":root").css("--priority-active-color", App.colors.priorityDefault);
+      $(":root").css("--priority-default-color", App.colors.priorityDefault);
+
+      const img = $("<img />");
+      img.attr("src", "assets/images/arrow.png");
+      img.attr("alt", "arrow showing where to click");
+      img.attr("width", "200");
+      img.attr("height", "auto");
+      img.css({marginLeft:"50%", marginTop:"-50px"});
+
+      const h2 = $("<h2 />");
+      h2.text("Instructions:");
+
+      const p = $("<p />");
+      p.text("Start by clicking on one of the alignments above. Then drill down further into some of the policy priorities to understand which communities have policies that promote those themes.")
+
+      $(App.els.categoryInfo).append(img);
+      $(App.els.categoryInfo).append(h2);
+      $(App.els.categoryInfo).append(p);
+
+      //remove classes to reset everything
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(`${App.els.strategyMapText} tspan`).empty();
+      $(App.els.ratioHud).removeClass("active"); 
+      $(".priorities").removeClass("active");
+      $(".jurisdiction").removeClass("active");
+      $(".alignment-buttons").removeClass("active");
+
+    });
+
+
+    // Make sure only one collapse is open at a time; update HUD + map fills
+    // When the button is clicked, this delegates the event to .terms, which is the div box
+    // that actually opens, not the button itself. This event is bootstrap collapse component 
+    // sending a trigger event any time a button with data-bs-toggle="collapse" is clicked.
+    $(App.els.categoryInfo).on("show.bs.collapse", ".terms", function (e) {
+      
+      $(App.els.categoryInfo).find(".collapse.show").not(e.target).collapse("hide");                 //trigger collapse to other categories that might be open
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");                              //remove active class from any previous jurisdictions
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);       //keep all circles visible
+      $(`${App.els.strategyMapText} tspan`).empty();
+
+      const id = this.id;                                                         //get the id attribute from this box
+      const $btn = $(`[data-bs-toggle="collapse"][data-bs-target="#${id}"]`);     //target the button that actuall initiated this open
+      $(".priorities").removeClass("active");                                     //remove previous active classes
+      $btn.addClass("active");
+
+      const $panel = $(this);
+      const priority = $panel.data("priority");
+      const jurClasses = String($panel.data("jurisdictions") || "");
+      App.state.currentPriority = priority;
+
+      for (const cls of jurClasses.split(" ").filter(Boolean)) {
+        $(`${App.els.mapRoot} #${cls}-background`).addClass("is-drawn");
+      }
+
+      $(App.els.ratioHud).addClass("active");                                                             //make the map ratio active
+      $(`${App.els.ratioHud} .ratio-figure`).text(`${jurClasses.split(" ").filter(Boolean).length}/7`);   //show the correct figure
+      $(`${App.els.ratioHud} #priority-word`).text("priority");
+    });
+
+
+    //when a category collapses
+    $(App.els.categoryInfo).on("hide.bs.collapse", ".terms", function () {
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(`${App.els.strategyMapText} tspan`).empty();
+      $(App.els.ratioHud).removeClass("active"); 
+      $(".priorities").removeClass("active");
+      $(".jurisdiction").removeClass("active");
+    });
+
+
+
+    // Jurisdiction click → table + map highlight
+    $(App.els.categoryInfo).on("click", ".jurisdiction", function () {
+      
+      $(`${App.els.strategyMapText} tspan`).empty();
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+      $(App.els.categoryInfo).removeClass("active");
+      $(this).addClass("active");
+
+      const slug = $(this).data("jurisdiction");
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+      $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+
+      App.state.wait = true; //wait for animation to complete
+
+      renderPolicyTable($(this).data("jurisdiction-raw"), App.state.currentPriority);
+
+      //scroll page to datatable
+      //$("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      scrollParentToId("datatable");
+      const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
+    });
+
+
+    $(App.els.categoryInfo).on("pointerover", ".jurisdiction", function () {
+      const slug = $(this).data("jurisdiction");
+      if(App.state.wait === false){
+        $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+        $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+        $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+      }
+    });
+
+    $(App.els.categoryInfo).on("pointerout", ".jurisdiction", function () {
+      const slug = $(this).data("jurisdiction");
+      if(App.state.wait === false){
+        $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapCircleColor);
+      }
+    });
+
+    $('svg circle, #riverside-county-background, #imperial-county-background').on("pointerover", function(){
+      const slug = $(this).attr("id").replace("-background", "");
+      if(App.state.wait === false){
+        $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+        $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+      }
+      $(`.jurisdiction[data-jurisdiction="${slug}"]`).addClass('expanded');
+    });
+
+    $('svg circle, #riverside-county-background, #imperial-county-background').on("pointerout", function(){
+      const slug = $(this).attr("id").replace("-background", "");
+      $(".jurisdiction").removeClass("expanded");
+      
+      if(App.state.wait === false){
+        $(".map-background-element").css("fill", App.colors.mapCircleColor);
+      }
+
+    });
+
+    $('svg circle, #riverside-county-background, #imperial-county-background').on("click", function(){
+
+      const slug = $(this).attr("id").replace("-background", "");
+      $(`${App.els.strategyMapText} tspan`).empty();
+      $(`.jurisdiction`).removeClass("active");
+      $(`.jurisdiction[data-jurisdiction="${slug}"]`).addClass('active');
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+      $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+
+      App.state.wait = true; 
+
+      if(App.state.currentPriority == ""){
+        renderPolicyTable(slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()))
+      } else {
+        console.log(App.state.currentPriority);
+        renderPolicyTable($(`.jurisdiction[data-jurisdiction="${slug}"]`).data("jurisdiction-raw"), App.state.currentPriority);
+      }
+
+      //scroll page to datatable
+      //$("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      scrollParentToId("datatable");
+      const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
+    });
+
+
+    $("#datatable").on("click", ".strategy-badge", function(){
+      
+      const jurClasses = $(this).data("strategy-jurisdictions");
+
+      $(`${App.els.ratioHud} .ratio-figure`).text(`${jurClasses.split(", ").filter(Boolean).length}/7`);
+      $(`${App.els.ratioHud} #priority-word`).text("strategy");
+
+      //split strategy text into chunks of 70 characters
+      const strategyText = `The following regions that have policies that include the strategy, "${$(this).text().trim()}."`;
+      const strategyTextArr = strategyText.split(" ").reduce((a,w) =>
+        (a[a.length-1].length + w.length + 1 <= 70
+          ? a[a.length-1] += (a[a.length-1] ? " " : "") + w
+          : a.push(w), a), [""]);
+
+      $(`${App.els.strategyMapText} tspan`).each((i, el) => $(el).text(strategyTextArr[i] || ""));
+
+      $(`${App.els.categoryInfo} .jurisdiction`).removeClass("active");
+      $(`${App.els.mapRoot} .map-background-element`).removeClass("is-drawn");
+      $(App.els.categoryInfo).removeClass("active");
+      $(App.els.ratioHud).addClass("active"); 
+      $(".priorities").removeClass("active");
+      $(".jurisdiction").removeClass("active");
+
+      const slug = $(this).data("jurisdiction");
+      $(`${App.els.mapRoot} .map-background-element`).css("fill", App.colors.mapCircleColor);
+      $(`${App.els.mapRoot} #${slug}-background`).css("fill", App.colors.mapSelectedColor);
+
+      for (const cls of jurClasses.split(", ").filter(Boolean)) {
+        $(`${App.els.mapRoot} #${slugify(cls)}-background`).addClass("is-drawn");
+      }
+
+      App.state.wait = true; //wait for animation to complete
+
+      //scroll page to datatable
+      //$("html, body").stop().animate({scrollTop: $("#dashboard").offset().top - 140}, 300);
+      scrollParentToId("dashboard");
+      const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
+
+    })
+
+
+  }
+
+  // -----------------------------
+  // Video caption button
+  // -----------------------------
+  const $video = $("video");
+  const video = $video.get(0);   // raw DOM element
+  const tracks = video.textTracks;   // TextTrackList
+
+  //Changing current language on video. The <video> tag has a current-language attribute
+  //Each button has a data-language attribute for the language to switch
+  $(".language-drop-down button.dropdown-item").on("click", function () {
+
+    const languageSources = {
+      "english" : "assets/images/salton-sea-opener-english.mp4",
+      "spanish" : "assets/images/salton-sea-opener-spanish.mp4"
+    }
+    const currentLang = $video.data("current-language"); //get current 
+    const newLang = $(this).data("language");
+    const wasPlaying = !video.paused && !video.ended;
+    const t = video.currentTime;
+
+    // If already on this source, do nothing
+    if (currentLang === newLang) return;
+
+    const source = $video.find("source").get(0);
+    if (source) {
+      source.src = languageSources[`${newLang}`]; //change the src with the other language
+      video.load();
+    } else {
+      video.src = languageSources[`${newLang}`];
+    }
+
+    //change current language for next time
+    $video.attr("data-current-language", newLang);
+    $video.data("current-language", newLang);
+
+    
+
+    //change active button
+    $(".language-drop-down button.dropdown-item").removeClass("active");
+    $(this).addClass("active");
+
+    // When metadata is ready, restore time and play state
+    const onLoaded = () => {
+      // Clamp time within duration in case lengths differ a bit
+      const seekTo = Math.min(t, Math.max(0, (video.duration || t)));
+      try { video.currentTime = seekTo; } catch (e) {}
+      if (wasPlaying) video.play().catch(() => {/* ignore autoplay block */});
+      video.removeEventListener("loadedmetadata", onLoaded);
+    };
+    video.addEventListener("loadedmetadata", onLoaded);
+
+
+
+  });
+
+
+  // Handle clicks on dropdown items
+  $(".caption-drop-down .dropdown-item").on("click", function () {
+    const lang = $(this).text().trim(); // "English" or "Español"
+
+    //caption already showing, remove it.
+    if($(this).hasClass("active")){
+
+      $(this).removeClass("active");
+
+      $.each(tracks, function (i, track) {
+        track.mode = "hidden";
+      });
+
+      return;
+    }
+
+    $(".caption-drop-down .dropdown-item").removeClass("active");
+    $(this).addClass("active").attr("aria-current", true);
+
+    // Hide all first
+    $.each(tracks, function (i, track) {
+      track.mode = "hidden";
+    });
+
+    // Show the chosen one
+    $.each(tracks, function (i, track) {
+      if (track.label === lang) {
+        track.mode = "showing";
+        return false; // break
+      }
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    new bootstrap.Tooltip(document.body, {
+      selector: '[data-bs-toggle="tooltip"]',
+      html: true
+    });
+  });
+
+  // -----------------------------
+  // Bootstrap the app
+  // -----------------------------
+  $(function () {
+    // DataTable first so it exists before we render into it
+    initDataTable();
+
+    d3.csv("assets/data/data.csv")
+      .then((data) => {
+        App.state.allData = data;
+        App.state.priorityIndex = buildPriorityIndex(data);
+
+        // These are still available if you need them elsewhere
+        App.state.uniquePriorities     = Array.from(d3.union(data.map(d => d["Priority Alignment"])));
+        App.state.priorityShortcodes   = Array.from(d3.union(data.map(d => d["Priority Alignment Shortcode"])));
+        App.state.priorityDescriptions = Array.from(d3.union(data.map(d => d["Priority Alignment Description"])));
+
+        //when given a specific strategy, get all of the jurisdictions that also have that strategy
+        App.state.getJurisdictionsFromStrategy = buildJurisdictionsFromStrategy(data);
+
+        // Build top-level buttons
+        updatePills(App.state.priorityShortcodes, App.state.priorityDescriptions);
+
+        //show all data in datatable
+        renderPolicyTable();
+
+        // Wire events after initial DOM exists
+        wireEvents(jQuery);
+      })
+      .catch((err) => console.error("Error loading CSV:", err));
+  });
+
+})();
+</script>
+
+</body>
+</html>
