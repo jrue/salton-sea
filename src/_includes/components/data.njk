@@ -112,67 +112,43 @@
   };
 
 
+ let scrollLock = false;
+
   /**
-   * Smoothly scroll the PARENT page so that the target element in the CHILD
-   * lines up nicely below a sticky header that shrinks from 160 -> 131.75.
+   * Compute targetY and (optionally) request the parent to scroll there.
+   * Returns a Promise that resolves to an object with diagnostics.
    *
-   * Usage (from inside the child):
-   *   scrollParentToId('datatable');                 // defaults
-   *   scrollParentToId('section-2', { extraOffset: 8 });  // tweak if needed
+   * Usage examples in console:
+   *   await scrollParentToId('datatable', { dryRun: true })
+   *   await scrollParentToId('datatable')  // performs the scroll
    */
-  let scrollLock = false;
-
-  function scrollParentToId(
-    id,
-    {
-      headerLarge = 160,
-      headerSmall = 131.75,
-      shrinkAt = 1,
-      extraOffset = 0,
-      fallbackIframeTop = 192
-    } = {}
-  ) {
-    if (!window.parentIFrame || scrollLock) return;
-
+  function scrollParentToId(id, {
+    headerLarge = 160,
+    headerSmall = 131.75,
+    shrinkAt = 1,
+    extraOffset = 0
+  } = {}) {
+    if (!('parentIframe' in window)) { console.warn('parentIframe missing'); return; }
     const el = document.getElementById(id);
     if (!el) return;
 
-    const send = (parentScrollTop, iframeTop) => {
-      const rectTop = el.getBoundingClientRect().top;
-      const header = parentScrollTop > shrinkAt ? headerSmall : headerLarge;
+    // one-shot: get parent props, then immediately disable updates
+    const disable = parentIframe.getParentProps((props) => {
+      disable && disable(); // unsubscribe immediately
 
-      const targetY = Math.max(
-        0,
-        Math.round(parentScrollTop + iframeTop + rectTop - header - extraOffset)
-      );
+      // props.iframe is getBoundingClientRect() of the IFAME in the parent
+      // props.viewport.pageTop is parent scrollTop, props.viewport.offsetTop is visual viewport offset
+      const parentScrollTop = props.viewport.pageTop || 0;
+      const iframeTop       = props.iframe.top || 0;        // distance from parent doc top to iframe top
+      const rectTop         = el.getBoundingClientRect().top;
+      const header          = parentScrollTop > shrinkAt ? headerSmall : headerLarge;
 
-      scrollLock = true;         // prevent re-entry
-      setTimeout(() => (scrollLock = false), 500); // release after anim
+      const targetY = Math.max(0, Math.round(parentScrollTop + iframeTop + rectTop - header - extraOffset));
 
-      window.parentIFrame.sendMessage({ action: 'scrollToY', y: targetY });
-    };
-
-    try {
-      // One-shot subscription
-      window.parentIFrame.getPageInfo(function infoOnce(info){
-        // Immediately UNSUBSCRIBE so it doesn't keep firing
-        try { window.parentIFrame.getPageInfo(false); } catch(e){}
-        const iframeTop = (info && typeof info.iframeTop === 'number') ? info.iframeTop : fallbackIframeTop;
-        const parentScrollTop = (info && typeof info.scrollTop === 'number') ? info.scrollTop : 0;
-        send(parentScrollTop, iframeTop);
-      });
-    } catch(e) {
-      // Fallback if getPageInfo not available
-      const rectTop = el.getBoundingClientRect().top;
-      const header = headerSmall;
-      const targetY = Math.max(0, Math.round(fallbackIframeTop + rectTop - header - extraOffset));
-      scrollLock = true; setTimeout(() => (scrollLock = false), 500);
-      window.parentIFrame.sendMessage({ action: 'scrollToY', y: targetY });
-    }
+      // send a message to parent to do the smooth tween
+      window.top.postMessage({ action: 'scrollToY', y: targetY }, '*');
+    });
   }
-
-  // expose inside your IIFE scope or attach to window if needed
-  window.scrollParentToId = scrollParentToId;
 
 
   // Build the big index once
