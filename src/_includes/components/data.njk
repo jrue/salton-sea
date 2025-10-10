@@ -610,7 +610,7 @@
       renderPolicyTable($(this).data("jurisdiction-raw"), App.state.currentPriority);
 
       //scroll page to datatable
-      $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      //$("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
       scrollParentToId("datatable");
       const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
     });
@@ -670,7 +670,7 @@
       }
 
       //scroll page to datatable
-      $("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
+      //$("html, body").stop().animate({scrollTop: $("#datatable").offset().top}, 300);
       scrollParentToId("datatable");
       const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
     });
@@ -710,7 +710,7 @@
       App.state.wait = true; //wait for animation to complete
 
       //scroll page to datatable
-      $("html, body").stop().animate({scrollTop: $("#dashboard").offset().top - 140}, 300);
+      //$("html, body").stop().animate({scrollTop: $("#dashboard").offset().top - 140}, 300);
       scrollParentToId("dashboard");
       const timer = window.setTimeout(function(){ App.state.wait = false;}, 600);
 
