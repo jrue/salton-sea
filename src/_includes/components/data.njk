@@ -249,7 +249,7 @@
       //customize the individual svg icons by editing the .svg files in the images folder. Keep names based on slugs.
       $col.append(`
         <div class="pill-labels mb-3 d-block position-relative"
-          style="background-image:url('{{ '/assets/images/' | url }}${slug}.svg');">
+          style="background-image:url('assets/images/${slug}.svg');">
         </div>
       `);
       $col.append(`
@@ -700,8 +700,8 @@
   $(".language-drop-down button.dropdown-item").on("click", function () {
 
     const languageSources = {
-      "english" : "{{ '/assets/images/salton-sea-opener-english.mp4' | url }}",
-      "spanish" : "{{ '/assets/images/salton-sea-opener-spanish.mp4' | url }}"
+      "english" : "assets/images/salton-sea-opener-english.mp4",
+      "spanish" : "assets/images/salton-sea-opener-spanish.mp4"
     }
     const currentLang = $video.data("current-language"); //get current 
     const newLang = $(this).data("language");
@@ -791,7 +791,7 @@
     // DataTable first so it exists before we render into it
     initDataTable();
 
-    d3.csv("{{ 'assets/data/data.csv' | url }}")
+    d3.csv("assets/data/data.csv")
       .then((data) => {
         App.state.allData = data;
         App.state.priorityIndex = buildPriorityIndex(data);
