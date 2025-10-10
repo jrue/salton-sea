@@ -120,66 +120,59 @@
    *   scrollParentToId('datatable');                 // defaults
    *   scrollParentToId('section-2', { extraOffset: 8 });  // tweak if needed
    */
+  let scrollLock = false;
+
   function scrollParentToId(
     id,
     {
       headerLarge = 160,
       headerSmall = 131.75,
-      shrinkAt = 1,        // when parent scrollTop > this, use headerSmall
-      extraOffset = 0,     // additional pixels to subtract if you want a gap
-      fallbackIframeTop = 192 // your observed constant, used only if pageInfo missing
+      shrinkAt = 1,
+      extraOffset = 0,
+      fallbackIframeTop = 192
     } = {}
   ) {
-    if (!window.parentIFrame) return; // iFrameResizer not ready yet
+    if (!window.parentIFrame || scrollLock) return;
 
     const el = document.getElementById(id);
     if (!el) return;
 
-    // Ask the parent for current scroll + where this iframe sits in the parent
-    // Then compute an absolute Y in the parent coordinate space and scroll to it.
+    const send = (parentScrollTop, iframeTop) => {
+      const rectTop = el.getBoundingClientRect().top;
+      const header = parentScrollTop > shrinkAt ? headerSmall : headerLarge;
+
+      const targetY = Math.max(
+        0,
+        Math.round(parentScrollTop + iframeTop + rectTop - header - extraOffset)
+      );
+
+      scrollLock = true;         // prevent re-entry
+      setTimeout(() => (scrollLock = false), 500); // release after anim
+
+      window.parentIFrame.sendMessage({ action: 'scrollToY', y: targetY });
+    };
+
     try {
-      window.parentIFrame.getPageInfo(function(info) {
-        // info.scrollTop: parent scroll position
-        // info.iframeTop: distance from parent's document top to top of iframe
-        const iframeTop = (info && typeof info.iframeTop === 'number')
-          ? info.iframeTop
-          : fallbackIframeTop;
-
-        const parentScrollTop = (info && typeof info.scrollTop === 'number')
-          ? info.scrollTop
-          : 0;
-
-        // Where is the element relative to the iframe's viewport?
-        const rect = el.getBoundingClientRect();
-
-        // Choose header size based on parent's current scrollTop
-        const header = parentScrollTop > shrinkAt ? headerSmall : headerLarge;
-
-        // Compute target absolute Y in the parent doc:
-        // parentScrollTop + iframeTop + elementTopInIframe - header - extraOffset
-        const targetY = Math.max(
-          0,
-          Math.round(parentScrollTop + iframeTop + rect.top - header - extraOffset)
-        );
-
-        // Smooth scroll the PARENT
-        window.parentIFrame.sendMessage({
-          action: "scrollToY",
-          y: targetY
-        });
+      // One-shot subscription
+      window.parentIFrame.getPageInfo(function infoOnce(info){
+        // Immediately UNSUBSCRIBE so it doesn't keep firing
+        try { window.parentIFrame.getPageInfo(false); } catch(e){}
+        const iframeTop = (info && typeof info.iframeTop === 'number') ? info.iframeTop : fallbackIframeTop;
+        const parentScrollTop = (info && typeof info.scrollTop === 'number') ? info.scrollTop : 0;
+        send(parentScrollTop, iframeTop);
       });
-    } catch (e) {
-      // If getPageInfo isn't available (older versions), fall back to a
-      // best-effort relative move using the known iframe offset.
-      const rect = el.getBoundingClientRect();
-      const header = headerSmall; // assume "scrolled" state as a safer default
-      const targetY = Math.max(0, Math.round(fallbackIframeTop + rect.top - header - extraOffset));
-      window.parentIFrame.sendMessage({
-        action: "scrollToY",
-        y: targetY
-      });
+    } catch(e) {
+      // Fallback if getPageInfo not available
+      const rectTop = el.getBoundingClientRect().top;
+      const header = headerSmall;
+      const targetY = Math.max(0, Math.round(fallbackIframeTop + rectTop - header - extraOffset));
+      scrollLock = true; setTimeout(() => (scrollLock = false), 500);
+      window.parentIFrame.sendMessage({ action: 'scrollToY', y: targetY });
     }
   }
+
+  // expose inside your IIFE scope or attach to window if needed
+  window.scrollParentToId = scrollParentToId;
 
 
   // Build the big index once
